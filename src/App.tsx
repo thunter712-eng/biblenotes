@@ -6,10 +6,10 @@ import { SearchPage } from './reader/SearchPage.tsx';
 import { StudyView } from './reader/StudyView.tsx';
 import { InkTestPage } from './ink/InkTestPage.tsx';
 import { Toasts } from './ui/primitives.tsx';
-
-export function Placeholder({ title }: { title: string }) {
-  return <p style={{ padding: 40 }}>{title}</p>;
-}
+import { NotesIndexPage } from './library/NotesIndexPage.tsx';
+import { NotebooksPage } from './library/NotebooksPage.tsx';
+import { SettingsPage } from './app/SettingsPage.tsx';
+import { AppNotices } from './app/AppNotices.tsx';
 
 function renderRoute(route: Route) {
   switch (route.name) {
@@ -17,7 +17,9 @@ function renderRoute(route: Route) {
     case 'search': return <SearchPage key={route.query ?? ''} initialQuery={route.query} />;
     case 'about': return <AboutPage />;
     case 'ink-test': return <InkTestPage />;
-    default: return <Placeholder title={route.name} />;
+    case 'notes': return <NotesIndexPage />;
+    case 'notebooks': return <NotebooksPage />;
+    case 'settings': return <SettingsPage />;
   }
 }
 
@@ -29,7 +31,7 @@ export function App() {
   useEffect(() => {
     if (route) { setReady(true); return; }
     void db.kv.get('lastPosition').then((row) => {
-      const pos = row?.value as { book: string; chapter: number; verse?: number } | undefined;
+      const pos = row?.value as { book: string; chapter: number; at?: number } | undefined;
       navigate(pos ? { name: 'read', ...pos } : { name: 'read', book: 'JHN', chapter: 1 }, true);
       setReady(true);
     });
@@ -39,6 +41,7 @@ export function App() {
   return (
     <>
       {renderRoute(route)}
+      <AppNotices />
       <Toasts />
     </>
   );

@@ -26,7 +26,7 @@ export function PaperSettings({ page, onClose }: { page: Page; onClose: () => vo
           <input type="text" defaultValue={page.title} onBlur={(e) => void updatePage(page.id, { title: e.target.value.trim() || page.title })} aria-label="Page title" />
         </Field>
         <Field label="Notebook">
-          <select value={page.notebookId} onChange={(e) => void updatePage(page.id, { notebookId: e.target.value })}>
+          <select aria-label="Notebook" value={page.notebookId} onChange={(e) => void updatePage(page.id, { notebookId: e.target.value })}>
             {notebooks?.map((n) => <option key={n.id} value={n.id}>{n.title}</option>)}
           </select>
         </Field>

@@ -77,3 +77,38 @@
 .list-row.is-active { background: var(--lapis-soft); color: var(--lapis); }
 .list-row.danger { color: var(--danger); }
 .menu-list { display: flex; flex-direction: column; }
+
+.filter-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.filter-row select { width: auto; max-width: 240px; }
+.empty-note { margin-top: 28px; font-size: 18px; }
+.index-group { margin-top: 22px; }
+.index-group h2 { font-family: 'EB Garamond', Georgia, serif; font-size: 24px; color: var(--lapis); }
+.index-entry { padding: 2px 0 6px; border-bottom: 1px solid var(--rule); }
+.index-open { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: var(--tap); padding: 8px 2px 2px; border: 0; background: none; text-align: left; color: inherit; }
+.index-open svg { flex: none; margin-top: 2px; color: var(--ink-soft); }
+.index-text { min-width: 0; }
+.index-title { display: block; font-weight: 500; }
+.index-snippet { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--ink-soft); font-size: 16px; }
+.index-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-left: 32px; }
+.index-tags .link-btn { font-size: 15px; min-height: 34px; padding: 0; }
+.tag { display: inline-flex; align-items: center; min-height: 28px; padding: 0 9px; border: 1px solid var(--rule); border-radius: 14px; background: var(--raised); color: var(--ink); font-size: 15px; }
+.tag.is-static { min-height: 24px; color: var(--ink-soft); }
+.tag-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 0 4px 32px; }
+.sheet .tag-editor { padding-left: 0; }
+.tag-editor input { width: 170px; }
+.notebook-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.notebook-row h2 { min-width: 0; }
+.notebook-row-actions { margin-left: auto; display: flex; }
+.page-row { display: flex; align-items: center; }
+.page-row .list-row { flex: 1; min-width: 0; }
+
+.settings h2:first-child { margin-top: 0; }
+.settings p { margin: 6px 0; }
+.button-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
+.settings .field { max-width: 300px; }
+.sheet .btn { width: 100%; }
+.sheet .goto .btn { width: auto; }
+.sheet p { margin: 6px 0 0; }
+.install-tip { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 58px); transform: translateX(-50%); z-index: 45; display: flex; align-items: flex-start; gap: 6px; width: min(620px, calc(100vw - 24px)); padding: 10px 6px 10px 16px; border: 1px solid var(--rule); border-left: 3px solid var(--gilt); border-radius: 12px; background: var(--raised); box-shadow: var(--shadow); }
+.install-tip p { margin: 0; flex: 1; }
+.install-tip strong { font-weight: 700; }

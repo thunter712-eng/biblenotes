@@ -14,6 +14,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'webkit', use: { ...devices['Desktop Safari'], viewport: { width: 1180, height: 820 } } },
+    // Service workers are the one thing worth checking twice, in case WebKit's test build lacks them.
+    { name: 'chromium-offline', testMatch: 'offline.spec.ts', use: { ...devices['Desktop Chrome'], viewport: { width: 1180, height: 820 } } },
   ],
   webServer: {
     command: `npm run build && npx vite preview --port ${PORT} --strictPort`,

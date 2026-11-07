@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
 export type Route =
-  | { name: 'read'; book: string; chapter: number; verse?: number; pageId?: string; noteId?: string }
+  | { name: 'read'; book: string; chapter: number; verse?: number; at?: number; pageId?: string; noteId?: string }
   | { name: 'notes' }
   | { name: 'notebooks' }
   | { name: 'search'; query?: string }
@@ -23,6 +23,7 @@ export function parseHash(hash: string): Route | null {
         book: parts[1],
         chapter,
         ...(verse ? { verse: +verse } : {}),
+        ...(q.get('at') ? { at: +q.get('at')! } : {}),
         ...(q.get('page') ? { pageId: q.get('page')! } : {}),
         ...(q.get('note') ? { noteId: q.get('note')! } : {}),
       };
@@ -42,6 +43,7 @@ export function routeToHash(r: Route): string {
     case 'read': {
       const q = new URLSearchParams();
       if (r.verse) q.set('v', `${r.verse}`);
+      if (r.at) q.set('at', `${r.at}`);
       if (r.pageId) q.set('page', r.pageId);
       if (r.noteId) q.set('note', r.noteId);
       const s = q.toString();
