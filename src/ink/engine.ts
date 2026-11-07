@@ -54,6 +54,10 @@ const HOLD_TOLERANCE = 4;
 const MAX_CANVAS_AREA = 16_000_000;
 const SELECT_HANDLE = 12;
 const TAP_DISTANCE = 6;
+const TAP_MAX_MS = 300;
+
+/** Below this, ruled lines get too close to write between, so a narrow panel pans sideways instead of shrinking the page. */
+const MIN_WRITING_SCALE = 0.72;
 
 const pressureCurve = (p: number) => Math.pow(Math.max(0.02, p), 0.72);
 
@@ -359,7 +363,15 @@ export class InkEngine {
 
   // ---------------------------------------------------------------- view
 
-  private get fit() { return this.vw / PAGE_WIDTH; }
+  /** The whole page width on screen. */
+  private get fitWidthScale() { return this.vw / PAGE_WIDTH; }
+
+  /** The scale at 100% zoom. */
+  private get fit() {
+    return this.options.embedded ? this.fitWidthScale : Math.max(this.fitWidthScale, MIN_WRITING_SCALE);
+  }
+
+  private get minScale() { return Math.min(this.fitWidthScale, this.fit) * 0.6; }
 
   private fitWidth(toTop = false) {
     const scale = this.fit * this.zoom;
@@ -381,7 +393,7 @@ export class InkEngine {
     }
     const w = PAGE_WIDTH * v.scale;
     const h = this.pageHeight * v.scale;
-    v.x = w <= this.vw ? (this.vw - w) / 2 : Math.min(40, Math.max(this.vw - w - 40, v.x));
+    v.x = w <= this.vw ? (this.vw - w) / 2 : Math.min(16, Math.max(this.vw - w - 16, v.x));
     v.y = Math.min(this.vh * 0.4, Math.max(Math.min(8, this.vh - h - 96), v.y));
     this.applyDisplayTransform();
   }
@@ -449,9 +461,7 @@ export class InkEngine {
   }
 
   private zoomAt(sx: number, sy: number, scale: number) {
-    const min = this.fit * 0.6;
-    const max = this.fit * 6;
-    const next = Math.max(min, Math.min(max, scale));
+    const next = Math.max(this.minScale, Math.min(this.fit * 6, scale));
     const v = this.view;
     v.x = sx - ((sx - v.x) / v.scale) * next;
     v.y = sy - ((sy - v.y) / v.scale) * next;
@@ -1279,8 +1289,7 @@ export class InkEngine {
       const [a, b] = [...this.touches.values()];
       const dist = Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
       const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
-      const min = this.fit * 0.6, max = this.fit * 6;
-      const next = Math.max(min, Math.min(max, this.pinchStart.scale * (dist / this.pinchStart.dist)));
+      const next = Math.max(this.minScale, Math.min(this.fit * 6, this.pinchStart.scale * (dist / this.pinchStart.dist)));
       this.view.scale = next;
       this.zoom = next / this.fit;
       this.view.x = cx - this.pinchStart.ax * next;
@@ -1305,7 +1314,8 @@ export class InkEngine {
       this.touchMode = null;
       if (mode === 'pan' && Math.hypot(this.velocity.x, this.velocity.y) > 0.15) this.startMomentum();
       else if (mode === 'pan' || mode === 'pinch') this.scheduleFull();
-      else if (mode === 'pending') this.onFingerTap(e);
+      // A resting palm also lifts without moving, so only a quick touch counts as a tap.
+      else if (mode === 'pending' && performance.now() - this.touchStartTime < TAP_MAX_MS) this.onFingerTap(e);
     }
   }
 

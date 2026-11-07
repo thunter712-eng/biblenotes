@@ -191,7 +191,8 @@ progress { width: 100%; accent-color: var(--lapis); height: 6px; }
 .toasts {
   position: fixed;
   left: 50%;
-  bottom: max(20px, env(safe-area-inset-bottom));
+  /* Clears the verse action bar. */
+  bottom: max(88px, calc(env(safe-area-inset-bottom) + 74px));
   transform: translateX(-50%);
   z-index: 80;
   display: flex;

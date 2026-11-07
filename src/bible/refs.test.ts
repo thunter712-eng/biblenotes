@@ -32,6 +32,7 @@ describe('formatting and ordering', () => {
     expect(formatRange('JHN.3.16', 'JHN.3.17')).toBe('John 3:16-17');
     expect(formatRange('JHN.3.16')).toBe('John 3:16');
     expect(formatRange('JHN.3.36', 'JHN.4.2')).toBe('John 3:36-4:2');
+    expect(formatRange('PSA.23.1')).toBe('Psalm 23:1');
   });
   it('formats verse lists', () => {
     expect(formatVerseList([19, 16, 17])).toBe('16-17, 19');

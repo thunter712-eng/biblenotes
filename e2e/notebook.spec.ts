@@ -162,6 +162,15 @@ test('paper template and color can be changed', async ({ page }) => {
   expect(blend).toBe('screen');
 });
 
+test('a narrow panel keeps a comfortable writing size and pans sideways', async ({ page }) => {
+  await page.setViewportSize({ width: 820, height: 1180 });
+  await openNewPage(page);
+  const view = await page.evaluate(() => ({ ...window.__ink.view }));
+  expect(view.scale).toBeGreaterThanOrEqual(0.72);
+  await penStroke(page, line(40, 200, 300, 200));
+  expect(await docSize(page)).toBe(1);
+});
+
 test('the divider resizes the split, and both full-screen modes work', async ({ page }) => {
   await openNewPage(page);
   const reader = page.locator('.split-reader');
@@ -187,7 +196,8 @@ test('the divider resizes the split, and both full-screen modes work', async ({ 
 test('a handwritten note under a verse takes ink and keeps it', async ({ page }) => {
   await verse(page, 16).click();
   await page.getByRole('button', { name: 'Handwritten note' }).click();
-  await expect(page.getByTestId('inline-ink')).toBeVisible();
+  // The host appears before the note's page has loaded. The engine marks it once it's listening.
+  await page.locator('[data-testid="inline-ink"].ink-root').waitFor();
   await penStroke(page, line(40, 60, 240, 80), 1, 'pen', '[data-testid="inline-ink"]');
   await page.waitForTimeout(700);
   await page.reload();

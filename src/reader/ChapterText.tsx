@@ -45,10 +45,11 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
     const styles = wordStyles(all.length, relevant);
     let index = 0;
     body = verse.lines.map((line, li) => {
+      if (line.label) return <span key={li} className="verse-label-inline">{line.text}</span>;
       const words = verseWords(line.text);
       return (
         <Fragment key={li}>
-          {li > 0 && <br />}
+          {li > 0 && !verse.lines[li - 1].label && <br />}
           {line.indent && <span className="q-indent" />}
           {words.map((w, wi) => {
             const i = index++;
@@ -67,9 +68,9 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
       );
     });
   } else {
-    body = verse.lines.map((line, li) => (
+    body = verse.lines.map((line, li) => line.label ? <span key={li} className="verse-label-inline">{line.text}</span> : (
       <Fragment key={li}>
-        {li > 0 && <br />}
+        {li > 0 && !verse.lines[li - 1].label && <br />}
         {line.indent && <span className="q-indent" />}
         {line.text}
       </Fragment>
@@ -77,7 +78,7 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
   }
 
   return (
-    <span className={`v ${decor.selected ? 'is-selected' : ''} ${decor.wordMode ? 'is-wordmode' : ''}`} data-v={verse.number} id={`v-${translation}-${verse.number}`}>
+    <span className={`v ${decor.selected ? 'is-selected' : ''} ${decor.wordMode ? 'is-wordmode' : ''}`} data-v={verse.number} id={`v-${translation}-${verse.number}`} tabIndex={0} aria-label={`Verse ${verse.number}${decor.selected ? ', selected' : ''}`}>
       {showNumber && <sup className="vn">{verse.number}</sup>}
       {decor.hasNotes && (
         <button type="button" className="note-marker" aria-label={`Show notes on verse ${verse.number}`} onClick={() => onMarker?.(verse.number)} />
@@ -95,7 +96,7 @@ function buildBlocks(verses: DecodedVerse[], hasAfter: (v: number) => boolean): 
   const blocks: Block[] = [];
   let cur: Extract<Block, { verses: DecodedVerse[] }> | null = null;
   verses.forEach((v) => {
-    if (!cur || v.start) {
+    if (!cur || v.start || v.labels) {
       cur = { type: v.start === 'q' ? 'q' : 'p', verses: [], key: v.number };
       blocks.push(cur);
     }
@@ -132,6 +133,7 @@ export function ChapterText({ data, chapter, translation, showNumbers, decorFor,
         dropped = true;
         return (
           <div key={block.key} className={block.type === 'q' ? 'block-q' : 'block-p'}>
+            {block.verses[0].labels?.map((l, i) => <p key={i} className="verse-label">{l}</p>)}
             {drop && <span className="drop-numeral" aria-hidden="true">{chapter}</span>}
             {block.verses.map((v, i) => (
               <VerseBody key={v.number} verse={v} translation={translation} decor={decorFor(v.number)} showNumber={showNumbers && !(drop && i === 0 && v.number === 1)} onMarker={onMarker} />
@@ -168,6 +170,12 @@ export function ParallelText({ left, right, leftId, rightId, showNumbers, decorF
       {left.headings.length > 0 && <p className="chapter-heading">{left.headings.join(' ')}</p>}
       {numbers.map((n) => (
         <Fragment key={n}>
+          {(leftMap.get(n)?.labels || rightMap.get(n)?.labels) && (
+            <div className="parallel-row">
+              <p className="verse-label">{leftMap.get(n)?.labels?.join(' ')}</p>
+              <p className="verse-label">{rightMap.get(n)?.labels?.join(' ')}</p>
+            </div>
+          )}
           <div className="parallel-row">
             {cell(leftMap.get(n), leftId, n)}
             {cell(rightMap.get(n), rightId, n)}

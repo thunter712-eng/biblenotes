@@ -240,3 +240,25 @@ test('performance with 5,000 strokes', async ({ page }) => {
   expect(live.liveFrameMs).toBeLessThan(8);
   expect(live.commit).toBeLessThan(16);
 });
+
+test('performance with a very long stroke', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const el = document.querySelector('.ink-root')!;
+    const r = el.getBoundingClientRect();
+    const fire = (type: string, x: number, y: number) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 1, pointerType: 'pen', clientX: r.left + x, clientY: r.top + y, pressure: 0.5, buttons: 1 }));
+    fire('pointerdown', 50, 100);
+    // 3,000 points is about 25 seconds of unbroken writing at 120 Hz.
+    for (let i = 0; i < 3000; i++) fire('pointermove', 50 + (i % 500) * 1.2, 100 + Math.floor(i / 500) * 60 + Math.sin(i / 5) * 18);
+    const frames: number[] = [];
+    for (let i = 0; i < 20; i++) {
+      fire('pointermove', 50 + i, 500);
+      await new Promise((res) => requestAnimationFrame(res));
+      frames.push(window.__ink.stats().liveFrameMs);
+    }
+    const t0 = performance.now();
+    fire('pointerup', 70, 500);
+    return { liveFrameMs: frames[frames.length - 1], commitMs: performance.now() - t0 };
+  });
+  console.log('LONG', JSON.stringify(result));
+  expect(result.commitMs).toBeLessThan(50);
+});

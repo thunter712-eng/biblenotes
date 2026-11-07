@@ -32,6 +32,14 @@ test('selects a range, highlights it, and adds a typed note that survives reload
   await expect(page.locator('.inline-note')).toContainText('John 3:16-17');
 });
 
+test('a new typed note takes the cursor, so typing goes straight in', async ({ page }) => {
+  await verse(page, 3).click();
+  await page.getByRole('button', { name: 'Typed note' }).click();
+  await expect(page.locator('.inline-note .rich-text')).toBeFocused();
+  await page.keyboard.type('Born from above');
+  await expect(page.locator('.inline-note .rich-text')).toContainText('Born from above');
+});
+
 test('collapses a note, and the verse marker reopens it', async ({ page }) => {
   await verse(page, 3).click();
   await page.getByRole('button', { name: 'Typed note' }).click();
@@ -80,13 +88,45 @@ test('goes to a typed reference, including a one-chapter book', async ({ page })
   await page.locator('.ref-btn').click();
   await page.getByLabel('Go to reference').fill('Ps 23:1-4');
   await page.keyboard.press('Enter');
-  await expect(page.locator('.ref-btn')).toHaveText('Psalms 23');
+  await expect(page.locator('.ref-btn')).toHaveText('Psalm 23');
   await expect(verse(page, 1)).toContainText('shepherd');
 
   await page.locator('.ref-btn').click();
   await page.getByLabel('Go to reference').fill('Jude 5');
   await page.keyboard.press('Enter');
   await expect(page.locator('.ref-btn')).toHaveText('Jude 1');
+});
+
+test('Psalm 119 keeps its Hebrew letter headings in place', async ({ page }) => {
+  await page.goto('#/read/PSA/119');
+  await expect(verse(page, 9)).toContainText('How can a young man');
+  await expect(page.locator('.verse-label', { hasText: 'BETH' })).toHaveCount(1);
+  await expect(verse(page, 8)).not.toContainText('BETH');
+  const order = await page.evaluate(() => {
+    const label = [...document.querySelectorAll('.verse-label')].find((e) => e.textContent === 'BETH')!;
+    return label.compareDocumentPosition(document.querySelector('.reader [data-v="9"]')!) & Node.DOCUMENT_POSITION_FOLLOWING;
+  });
+  expect(order).toBeTruthy();
+});
+
+test('verses can be selected from the keyboard', async ({ page }) => {
+  await verse(page, 16).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('action-bar')).toContainText('John 3:16');
+});
+
+test('reopening the app returns to where reading stopped', async ({ page }) => {
+  await verse(page, 30).scrollIntoViewIfNeeded();
+  await page.getByTestId('reader').evaluate((el) => { el.scrollTop = 1400; });
+  await page.waitForTimeout(800);
+  const before = await page.getByTestId('reader').evaluate((el) => el.scrollTop);
+  await page.goto('about:blank');
+  await page.goto('');
+  await expect(page.locator('.ref-btn')).toHaveText('John 3');
+  await expect(verse(page, 1)).toBeAttached();
+  await page.waitForTimeout(300);
+  const after = await page.getByTestId('reader').evaluate((el) => el.scrollTop);
+  expect(Math.abs(after - before)).toBeLessThan(420);
 });
 
 test('shows two translations verse by verse', async ({ page }) => {

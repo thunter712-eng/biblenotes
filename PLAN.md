@@ -35,7 +35,7 @@ Key decisions:
 | World English Bible (`engwebp`) | `https://ebible.org/Scriptures/engwebp_usfm.zip` | Public domain, checked at `https://ebible.org/engwebp/copyright.htm`. "World English Bible" is a trademark of eBible.org: the name may not be used for a changed text. | eBible.org is the master publisher of the WEB. |
 | American Standard Version 1901 (`eng-asv`) | `https://ebible.org/Scriptures/eng-asv_usfm.zip` | Public domain, checked at `https://ebible.org/eng-asv/copyright.htm` | Same format and pipeline as the WEB. |
 
-The pipeline removes footnotes, cross references and Strong's tags. Those are formatting and apparatus, not wording changes. Adding KJV or BSB means one new entry in `scripts/translations.config.ts` plus `npm run build:bible`. The app discovers translations from the generated `public/bible/index.json`.
+The pipeline removes footnotes, cross references, Strong's numbers and character markup such as words-of-Jesus and supplied-word italics. Those are apparatus and formatting, not wording changes. `scripts/verify-bible.ts` compares the output word for word against eBible's separately published verse-per-line edition. Adding KJV or BSB means one new entry in `scripts/translations.config.ts` plus `npm run build:bible`. The app discovers translations from the generated `public/bible/index.json`.
 
 ## Milestones
 

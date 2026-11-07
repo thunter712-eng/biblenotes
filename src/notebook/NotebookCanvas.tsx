@@ -50,6 +50,8 @@ export const NotebookCanvas = forwardRef<NotebookHandle, { page: Page; topRight?
   const [editing, setEditing] = useState<{ id: string; original: TextBoxObject | null } | null>(null);
   const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
   const closedAt = useRef(-Infinity);
+  const hasSelection = useRef(false);
+  const addSheetBtn = useRef<HTMLButtonElement>(null);
   const fingerDraws = useSettings((s) => s.fingerDraws);
   const tool = useInkTools(useShallow(selectToolConfig));
   const quoteClip = useQuoteClipboard((s) => s.quote);
@@ -73,9 +75,16 @@ export const NotebookCanvas = forwardRef<NotebookHandle, { page: Page; topRight?
       stopSave = attachAutosave(page.id, d);
       const e = new InkEngine(host.current, d, { template: page.template, paperColor: page.paperColor, sheets: page.sheets }, {
         fingerDraws: useSettings.getState().fingerDraws,
-        onSelection: (ids, bbox) => setSelection({ ids, bbox }),
+        onSelection: (ids, bbox) => {
+          hasSelection.current = ids.length > 0;
+          setSelection({ ids, bbox });
+        },
         onHistory: () => setHistoryTick((t) => t + 1),
-        onView: (_v: View) => setViewTick((t) => t + 1),
+        // This runs on every pan frame, so it stays out of React unless a selection menu has to follow.
+        onView: (v: View) => {
+          if (addSheetBtn.current) addSheetBtn.current.style.top = `${v.y + (engineLocal?.pageHeight ?? 0) * v.scale + 12}px`;
+          if (hasSelection.current) setViewTick((t) => t + 1);
+        },
         onMeta: (m) => void updatePage(page.id, { sheets: m.sheets }),
         onEditObject: (id) => {
           const o = d.get(id);
@@ -259,7 +268,7 @@ export const NotebookCanvas = forwardRef<NotebookHandle, { page: Page; topRight?
       {engine && createPortal(
         <>
           {selectionMenu()}
-          <button type="button" className="add-sheet" data-engine-ignore style={{ top: Math.min(engine.pageToScreen(0, engine.pageHeight).y + 12, (host.current?.clientHeight ?? 9999) + 100) }} onClick={() => engine.addSheet()}>
+          <button type="button" ref={addSheetBtn} className="add-sheet" data-engine-ignore style={{ top: engine.pageToScreen(0, engine.pageHeight).y + 12 }} onClick={() => engine.addSheet()}>
             <Icon name="plus" size={18} />Add page
           </button>
         </>,
@@ -298,10 +307,12 @@ function TextBoxEditor({ o, engine, onChange, onClose, toolbarSlot }: {
   };
   const endDrag = () => { drag.current = null; };
 
+  // Handles live inside the zoomed layer, so they're scaled back up to stay a usable size for a finger.
+  const handleScale = { transform: `scale(${1 / engine.view.scale})` };
   return (
     <div className="page-box-edit" data-engine-ignore style={{ left: o.x, top: o.y, width: o.w, fontSize: 18 * o.scale }}>
-      <div className="box-grip" role="button" aria-label="Drag to move" onPointerDown={(e) => startDrag(e, 'move')} onPointerMove={moveDrag} onPointerUp={endDrag}><Icon name="grip" size={18} /></div>
-      <div className="box-width" role="button" aria-label="Drag to change width" onPointerDown={(e) => startDrag(e, 'width')} onPointerMove={moveDrag} onPointerUp={endDrag} />
+      <div className="box-grip" style={handleScale} role="button" aria-label="Drag to move" onPointerDown={(e) => startDrag(e, 'move')} onPointerMove={moveDrag} onPointerUp={endDrag}><Icon name="grip" size={18} /></div>
+      <div className="box-width" style={handleScale} role="button" aria-label="Drag to change width" onPointerDown={(e) => startDrag(e, 'width')} onPointerMove={moveDrag} onPointerUp={endDrag} />
       <RichEditor
         content={initial} autoFocus placeholder="Type here"
         renderToolbar={(editor: Editor) => (toolbarSlot ? createPortal(<EditorToolbar editor={editor} />, toolbarSlot) : null)}

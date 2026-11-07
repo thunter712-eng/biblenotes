@@ -21,12 +21,20 @@ export function RichEditor({ content, onChange, autoFocus, placeholder, renderTo
   const editor = useEditor({
     extensions: editorExtensions,
     content: (content as JSONContent | null | undefined) ?? '',
-    autofocus: autoFocus ? 'end' : false,
     shouldRerenderOnTransaction: true,
     editorProps: { attributes: { class: 'rich-text', 'aria-label': placeholder ?? 'Note text', autocapitalize: 'sentences' } },
     onUpdate: ({ editor: e }) => onChangeRef.current(e.getJSON(), e.getText({ blockSeparator: '\n' })),
     onFocus: () => setFocused(true),
   });
+
+  // Notes mount after a database write, so the prop can arrive after the editor exists. Tiptap's
+  // own autofocus option only looks once, at creation. iOS still won't raise the keyboard from
+  // here without a fresh tap, but the caret is in place for the tap that follows.
+  useEffect(() => {
+    if (!autoFocus || !editor) return;
+    const id = requestAnimationFrame(() => editor.commands.focus('end'));
+    return () => cancelAnimationFrame(id);
+  }, [autoFocus, editor]);
 
   // Blur is judged by where focus lands, because tapping a toolbar select also blurs the editor.
   useEffect(() => {

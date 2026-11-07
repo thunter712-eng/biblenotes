@@ -18,6 +18,8 @@ export interface ReaderPaneProps {
   book: string;
   chapter: number;
   verse?: number;
+  /** Scroll here without calling attention to it: the restored reading position. */
+  at?: number;
   noteId?: string;
   onAddToPage?: () => void;
   onInkNote?: () => void;
@@ -28,7 +30,7 @@ export interface ReaderPaneProps {
   openedNoteId?: string | null;
 }
 
-export function ReaderPane({ book, chapter, verse, noteId, onAddToPage, onInkNote, shouldQuoteDrag, onQuoteMove, onQuoteDrop, renderInk, openedNoteId }: ReaderPaneProps) {
+export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onInkNote, shouldQuoteDrag, onQuoteMove, onQuoteDrop, renderInk, openedNoteId }: ReaderPaneProps) {
   const s = useSettings();
   const translations = useTranslations();
   const main = useChapter(s.translation, book, chapter);
@@ -70,16 +72,40 @@ export function ReaderPane({ book, chapter, verse, noteId, onAddToPage, onInkNot
   // Scroll on navigation: to the target verse or note when there is one, otherwise to the top.
   useEffect(() => {
     if (!main.data) return;
-    const target = verse ? document.getElementById(`v-${s.translation}-${verse}`) : null;
-    if (target) {
+    const target = verse || at ? document.getElementById(`v-${s.translation}-${verse ?? at}`) : null;
+    if (target && verse) {
       target.scrollIntoView({ block: 'center' });
       target.classList.remove('flash');
       void target.offsetWidth;
       target.classList.add('flash');
+    } else if (target) {
+      target.scrollIntoView({ block: 'start' });
     } else if (!noteId) {
       scroller.current?.scrollTo(0, 0);
     }
+    // `at` only matters when a chapter first opens, so saving a new position mustn't scroll.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [main.data, verse, s.translation, noteId, key]);
+
+  // Remembers the verse at the top of the view, so the app reopens at the same place.
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    let timer = 0;
+    const onScroll = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const r = el.getBoundingClientRect();
+        const under = document.elementFromPoint(r.left + r.width / 2, r.top + 40)?.closest('[data-v]') as HTMLElement | null;
+        void db.kv.put({ key: 'lastPosition', value: { book, chapter, ...(under?.dataset.v ? { at: +under.dataset.v } : {}) } });
+      }, 400);
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      el.removeEventListener('scroll', onScroll);
+    };
+  }, [book, chapter]);
 
   useEffect(() => {
     if (!noteId) return;
@@ -143,7 +169,15 @@ export function ReaderPane({ book, chapter, verse, noteId, onAddToPage, onInkNot
   return (
     <div className="reader-pane">
       <div className="reader-scroll" ref={scroller} data-testid="reader">
-        <article ref={article} className={`reader ${parallel ? 'is-parallel' : ''}`} style={{ fontFamily: fontCss(s.readerFont), fontSize: s.readerSize, lineHeight: s.readerLeading }}>
+        <article ref={article} className={`reader ${parallel ? 'is-parallel' : ''}`} onKeyDown={(e) => {
+          // Enter or Space on a focused verse acts as a tap, for keyboards and switch control.
+          const v = (e.target as HTMLElement).dataset?.v;
+          if (v && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            const st = useSelection.getState();
+            st.setSelection(applyTap({ verses: st.verses, anchor: st.anchor }, +v, e.metaKey || e.ctrlKey || st.additive, known));
+          }
+        }} style={{ fontFamily: fontCss(s.readerFont), fontSize: s.readerSize, lineHeight: s.readerLeading }}>
           <h1 className="book-title">{info?.name}{parallel ? ` ${chapter}` : ''}</h1>
           {main.error && <p className="form-error">{main.error}</p>}
           {parallel && <div className="parallel-row parallel-head"><span>{abbr}</span><span>{rightAbbr}</span></div>}

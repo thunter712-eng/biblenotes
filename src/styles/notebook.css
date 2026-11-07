@@ -49,8 +49,8 @@
 .page-box-edit { position: absolute; color: #1B1F2B; line-height: 1.35; font-family: 'Alegreya Sans', system-ui, sans-serif; background: rgba(255, 255, 255, 0.88); outline: 1.5px solid #3E66C9; outline-offset: 3px; touch-action: auto; -webkit-user-select: text; user-select: text; cursor: text; }
 .ink-root[data-paper='dark'] .page-box-edit { color: #ECEEF4; background: rgba(28, 31, 41, 0.9); }
 .page-box-edit .rich-text { min-height: 2em; }
-.box-grip { position: absolute; left: -3px; top: -34px; width: 42px; height: 28px; display: flex; align-items: center; justify-content: center; background: #3E66C9; color: #fff; border-radius: 6px 6px 0 0; touch-action: none; cursor: move; }
-.box-width { position: absolute; right: -14px; top: 0; bottom: 0; width: 22px; touch-action: none; cursor: ew-resize; }
+.box-grip { position: absolute; left: -3px; bottom: calc(100% + 3px); transform-origin: left bottom; width: 44px; height: 30px; display: flex; align-items: center; justify-content: center; background: #3E66C9; color: #fff; border-radius: 6px 6px 0 0; touch-action: none; cursor: move; }
+.box-width { position: absolute; right: -14px; top: 0; bottom: 0; width: 22px; transform-origin: center; touch-action: none; cursor: ew-resize; }
 .box-width::after { content: ''; position: absolute; left: 9px; top: 50%; height: 26px; margin-top: -13px; width: 5px; border-radius: 3px; background: #3E66C9; }
 /* Empty until a text box is being edited. */
 .page-ed-toolbar:empty { display: none; }

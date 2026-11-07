@@ -39,7 +39,7 @@ test('the notes index lists everything in Bible order, filters, and jumps to the
   await addTypedNote(page, '#/read/ROM/8', 1, 'No condemnation');
   await addTypedNote(page, '#/read/GEN/1', 1, 'In the beginning');
   await page.getByRole('button', { name: 'Notes index' }).click();
-  await expect(page.locator('.index-group h2').allTextContents()).resolves.toEqual(['Genesis', 'Romans']);
+  await expect(page.locator('.index-group h2')).toHaveText(['Genesis', 'Romans']);
 
   await page.getByLabel('Search your notes').fill('condemnation');
   await expect(page.locator('.index-entry')).toHaveCount(1);

@@ -74,19 +74,23 @@ export function formatVerseList(verses: number[]): string {
   return parts.join(', ');
 }
 
+/** One psalm is a "Psalm". Every other book reads the same either way. */
+export const bookLabel = (id: string) => (id === 'PSA' ? 'Psalm' : getBook(id)?.name ?? id);
+export const chapterLabel = (book: string, chapter: number) => `${bookLabel(book)} ${chapter}`;
+
 /** "John 3:16-17". Single-verse and whole-chapter forms read naturally. */
 export function formatRange(startRef: VerseRef, endRef: VerseRef = startRef): string {
   const s = parseVerseRef(startRef);
   const e = parseVerseRef(endRef);
-  const name = getBook(s.book)?.name ?? s.book;
-  if (s.book !== e.book) return `${name} ${s.chapter}:${s.verse} - ${getBook(e.book)?.name ?? e.book} ${e.chapter}:${e.verse}`;
+  const name = bookLabel(s.book);
+  if (s.book !== e.book) return `${name} ${s.chapter}:${s.verse} - ${bookLabel(e.book)} ${e.chapter}:${e.verse}`;
   if (s.chapter !== e.chapter) return `${name} ${s.chapter}:${s.verse}-${e.chapter}:${e.verse}`;
   if (s.verse === e.verse) return `${name} ${s.chapter}:${s.verse}`;
   return `${name} ${s.chapter}:${s.verse}-${e.verse}`;
 }
 
 export function formatVerses(book: string, chapter: number, verses: number[]): string {
-  return `${getBook(book)?.name ?? book} ${chapter}:${formatVerseList(verses)}`;
+  return `${bookLabel(book)} ${chapter}:${formatVerseList(verses)}`;
 }
 
 /** Splits a sorted verse list into contiguous runs. */

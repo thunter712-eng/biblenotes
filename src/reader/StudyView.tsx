@@ -3,9 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { navigate, routeToHash, type Route } from '../app/router.ts';
 import { rememberReadHash } from '../app/PageShell.tsx';
 import { useSettings } from '../app/settings.ts';
-import { getBook } from '../bible/books.ts';
 import { getVerseTexts } from '../bible/data.ts';
-import { adjacentChapter, chapterKey, formatRange, formatVerses, makeRef, refKey } from '../bible/refs.ts';
+import { adjacentChapter, chapterKey, chapterLabel, formatRange, formatVerses, makeRef, refKey } from '../bible/refs.ts';
 import { toRuns } from '../bible/refs.ts';
 import { db, type Note } from '../db/schema.ts';
 import { createPage } from '../db/library.ts';
@@ -41,7 +40,6 @@ export function StudyView({ route }: { route: ReadRoute }) {
   const notebook = useRef<NotebookHandle>(null);
   const splitEl = useRef<HTMLDivElement>(null);
   const dragPayload = useRef<QuotePayload | null>(null);
-  const info = getBook(book);
   const abbr = translations.find((t) => t.id === s.translation)?.abbr ?? s.translation.toUpperCase();
   const sel = useSelection();
 
@@ -63,7 +61,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
 
   useEffect(() => {
     rememberReadHash(routeToHash(route));
-    void db.kv.put({ key: 'lastPosition', value: { book, chapter, ...(verse ? { verse } : {}) } });
+    void db.kv.put({ key: 'lastPosition', value: { book, chapter, ...(verse ? { at: verse } : {}) } });
     void db.history.put({ chapterKey: chapterKey(book, chapter), visitedAt: Date.now() });
   }, [book, chapter, verse, route]);
 
@@ -80,7 +78,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
   const chapterBookmark = bookmarks?.find((b) => b.ref === chapterRef);
   const bookmarkChapter = async () => {
     const on = await toggleBookmark(chapterRef);
-    toast(on ? `Bookmarked ${info?.name} ${chapter}` : 'Bookmark removed');
+    toast(on ? `Bookmarked ${chapterLabel(book, chapter)}` : 'Bookmark removed');
   };
 
   const prev = adjacentChapter(book, chapter, -1);
@@ -94,7 +92,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
       const endRef = makeRef(book, chapter, runs[runs.length - 1][1]);
       return { label: formatRange(startRef, endRef), startRef, endRef, book, chapter };
     }
-    return { label: `${info?.name} ${chapter}`, startRef: makeRef(book, chapter, 1), endRef: makeRef(book, chapter, 1), book, chapter };
+    return { label: chapterLabel(book, chapter), startRef: makeRef(book, chapter, 1), endRef: makeRef(book, chapter, 1), book, chapter };
   })();
 
   const notebookOpen = mode === 'split' || mode === 'notebook';
@@ -156,8 +154,8 @@ export function StudyView({ route }: { route: ReadRoute }) {
         <header className="topbar">
           <div className="topbar-group">
             <IconButton icon="back" label="Previous chapter" disabled={!prev} onClick={() => go(-1)} />
-            <button type="button" className="ref-btn" onClick={() => setSheet('picker')} aria-label={`${info?.name} ${chapter}. Choose a passage`}>
-              {info?.name} {chapter}
+            <button type="button" className="ref-btn" onClick={() => setSheet('picker')} aria-label={`${chapterLabel(book, chapter)}. Choose a passage`}>
+              {chapterLabel(book, chapter)}
             </button>
             <IconButton icon="forward" label="Next chapter" disabled={!next} onClick={() => go(1)} />
             <select className="translation-select" value={s.translation} aria-label="Translation" onChange={(e) => s.set({ translation: e.target.value })}>
@@ -177,12 +175,12 @@ export function StudyView({ route }: { route: ReadRoute }) {
         </header>
       )}
       {chromeHidden && <IconButton className="flash-restore" icon="shrink" label="Leave full-screen reading" onClick={() => setMode('read')} />}
-      <div className="study-split" ref={splitEl}>
+      <main className="study-split" ref={splitEl as React.RefObject<HTMLElement>}>
         {readerVisible && (
           <div className="split-reader" style={mode === 'split' ? { flex: `${ratio} 1 0` } : { flex: 1 }}>
-            {chapterBookmark && <div className="ribbon" aria-hidden="true" />}
+            {!!bookmarks?.length && <div className="ribbon" aria-hidden="true" />}
             <ReaderPane
-              book={book} chapter={chapter} verse={verse} noteId={route.noteId} openedNoteId={openedNote}
+              book={book} chapter={chapter} verse={verse} at={route.at} noteId={route.noteId} openedNoteId={openedNote}
               onAddToPage={notebookOpen && pageId ? () => void addToPage() : undefined}
               onInkNote={() => void inkNote()}
               renderInk={renderInk}
@@ -221,7 +219,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
             />
           </div>
         )}
-      </div>
+      </main>
       {ghost && (
         <div className="quote-ghost" style={{ left: ghost.x, top: ghost.y }} aria-hidden="true">
           <strong>{ghost.label}</strong>

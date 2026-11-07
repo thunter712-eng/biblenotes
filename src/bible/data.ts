@@ -17,6 +17,7 @@ interface BookJson {
   name: string;
   chapters: (string | null)[][];
   headings?: Record<string, string[]>;
+  verseHeadings?: Record<string, string[]>;
 }
 
 const url = (path: string) => `${import.meta.env.BASE_URL}bible/${path}`;
@@ -57,7 +58,10 @@ export async function loadChapter(translation: string, book: string, chapter: nu
   const verses: DecodedVerse[] = [];
   raw.forEach((v, i) => {
     // Some verse numbers are intentionally empty, such as Luke 17:36 in the WEB.
-    if (v && v.replace(/^[¶§]/, '').trim()) verses.push(decodeVerse(i + 1, v));
+    if (v && v.replace(/^[¶§]/, '').trim()) {
+      const labels = data.verseHeadings?.[`${chapter}.${i + 1}`];
+      verses.push({ ...decodeVerse(i + 1, v), ...(labels ? { labels } : {}) });
+    }
   });
   return { verses, headings: data.headings?.[chapter] ?? [] };
 }

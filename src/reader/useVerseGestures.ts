@@ -132,9 +132,10 @@ export function useVerseGestures(ref: RefObject<HTMLElement | null>, handlers: V
     const onUp = (e: PointerEvent) => end(e, false);
     const onCancel = (e: PointerEvent) => end(e, true);
 
-    // Once a long press has claimed the gesture, stop iOS from starting a scroll.
+    // Stop iOS starting a scroll once a long press has claimed the gesture, and always for a Pencil,
+    // whose drags select. iOS only asks once, on the first move, so this can't wait for the threshold.
     const onTouchMove = (e: TouchEvent) => {
-      if (press && press.mode !== 'pending') e.preventDefault();
+      if (press && (press.mode !== 'pending' || press.type === 'pen') && e.cancelable) e.preventDefault();
     };
     const noContext = (e: Event) => e.preventDefault();
 

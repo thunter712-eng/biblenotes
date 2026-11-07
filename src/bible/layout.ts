@@ -3,6 +3,8 @@
 export interface VerseLine {
   text: string;
   indent: boolean;
+  /** A label inside the verse, such as a speaker. Not part of the verse text. */
+  label?: boolean;
 }
 
 export interface DecodedVerse {
@@ -12,6 +14,8 @@ export interface DecodedVerse {
   lines: VerseLine[];
   /** Plain text with single spaces, for search, copy and quotes. */
   plain: string;
+  /** Labels above the verse, such as a speaker in Song of Solomon. */
+  labels?: string[];
 }
 
 export function decodeVerse(number: number, raw: string): DecodedVerse {
@@ -24,8 +28,10 @@ export function decodeVerse(number: number, raw: string): DecodedVerse {
     start = 'q';
     body = body.slice(1);
   }
-  const lines = body.split('\n').map((l) => ({ text: l.replace(/^\t/, ''), indent: l[0] === '\t' }));
-  return { number, start, lines, plain: lines.map((l) => l.text).join(' ') };
+  const lines: VerseLine[] = body.split('\n').map((l) =>
+    l[0] === '‡' ? { text: l.slice(1), indent: false, label: true } : { text: l.replace(/^\t/, ''), indent: l[0] === '\t' },
+  );
+  return { number, start, lines, plain: lines.filter((l) => !l.label).map((l) => l.text).join(' ') };
 }
 
 /** Word tokens of a verse. Word-range highlights index into this list. */

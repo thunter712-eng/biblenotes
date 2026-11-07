@@ -16,7 +16,7 @@ export function IconButton({ icon, label, active, size, className = '', children
   );
 }
 
-/** A modal sheet. Traps nothing fancy: focuses itself, closes on Escape and backdrop tap. */
+/** A modal sheet. It holds focus while open, returns it afterwards, and closes on Escape or a backdrop tap. */
 export function Sheet({ title, onClose, children, width, footer }: { title: string; onClose: () => void; children: ReactNode; width?: number; footer?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -24,6 +24,14 @@ export function Sheet({ title, onClose, children, width, footer }: { title: stri
     if (!ref.current?.contains(document.activeElement)) ref.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && ref.current) {
+        // Keep Tab inside the dialog.
+        const items = ref.current.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href]');
+        if (!items.length) return;
+        const first = items[0], last = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => {
