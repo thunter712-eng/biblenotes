@@ -36,7 +36,7 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
   translation: string;
 }) {
   const relevant = decor.highlights.filter((h) => !h.wordRange || h.translation === translation);
-  const whole = relevant.find((h) => !h.wordRange);
+  const whole = relevant.filter((h) => !h.wordRange);
   const hasWordHighlights = relevant.some((h) => h.wordRange);
 
   let body: ReactNode;
@@ -82,7 +82,7 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
       {decor.hasNotes && (
         <button type="button" className="note-marker" aria-label={`Show notes on verse ${verse.number}`} onClick={() => onMarker?.(verse.number)} />
       )}
-      <span className={whole ? hlClass(whole) : undefined}>{body}</span>{' '}
+      {whole.reduce<ReactNode>((inner, h) => <span className={hlClass(h)}>{inner}</span>, body)}{' '}
     </span>
   );
 });

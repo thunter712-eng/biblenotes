@@ -53,7 +53,6 @@
 @keyframes ribbon-fall { from { transform: scaleY(0.1); } to { transform: scaleY(1); } }
 
 .reader-scroll {
-  flex: 1;
   min-width: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -194,3 +193,4 @@
 .result-ref { display: block; font-weight: 500; color: var(--lapis); }
 .result-text { display: block; font-family: 'EB Garamond', Georgia, serif; font-size: 19px; line-height: 1.35; }
 .result-text mark { background: var(--hl-yellow); color: inherit; border-radius: 2px; }
+.reader-scroll { flex: 1; min-height: 0; }

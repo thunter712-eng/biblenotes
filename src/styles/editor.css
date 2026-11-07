@@ -1,0 +1,121 @@
+.reader-pane { flex: 1; min-width: 0; position: relative; display: flex; flex-direction: column; }
+
+.action-wrap {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  font-family: var(--ui-font);
+}
+.action-bar, .palette {
+  pointer-events: auto;
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  max-width: 100%;
+}
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.action-label { padding: 0 8px; white-space: nowrap; color: var(--lapis); font-weight: 700; }
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 62px;
+  height: 52px;
+  padding: 2px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font-size: 13px;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.action.is-active { background: var(--lapis-soft); color: var(--lapis); }
+.palette { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.palette-colors { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.palette-hint { margin: 0; font-size: 15px; color: var(--ink-soft); text-align: center; }
+.color-dot { width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.18); padding: 0; }
+.dot-yellow { background: var(--hl-yellow); }
+.dot-green { background: var(--hl-green); }
+.dot-blue { background: var(--hl-blue); }
+.dot-pink { background: var(--hl-pink); }
+.dot-orange { background: var(--hl-orange); }
+.dot-purple { background: var(--hl-purple); }
+
+.after-verse { margin: 0.2em 0 1em; }
+.inline-note {
+  margin-bottom: 8px;
+  border-left: 3px solid var(--gilt);
+  border-radius: 0 10px 10px 0;
+  background: var(--surface);
+  font-family: var(--ui-font);
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.inline-note-head { display: flex; align-items: center; justify-content: space-between; padding: 0 2px 0 12px; }
+.inline-note-ref { color: var(--ink-soft); font-size: 15px; }
+.inline-note-actions { display: flex; }
+.flip svg { transform: rotate(180deg); }
+.inline-note .rich-editor { padding: 0 12px 10px; }
+
+.rich-text { outline: none; min-height: 1.4em; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
+.rich-text p { margin: 0 0 0.45em; }
+.rich-text > :last-child { margin-bottom: 0; }
+.rich-text h1 { font-size: 1.6em; font-weight: 700; margin: 0.2em 0 0.3em; }
+.rich-text h2 { font-size: 1.32em; font-weight: 700; margin: 0.2em 0 0.3em; }
+.rich-text h3 { font-size: 1.12em; font-weight: 700; margin: 0.2em 0 0.3em; }
+.rich-text ul, .rich-text ol { margin: 0 0 0.45em; padding-left: 1.4em; }
+.rich-text ul[data-type='taskList'] { list-style: none; padding-left: 0; }
+.rich-text ul[data-type='taskList'] li { display: flex; gap: 0.5em; align-items: flex-start; }
+.rich-text ul[data-type='taskList'] li > div { flex: 1; min-width: 0; }
+.rich-text ul[data-type='taskList'] input { width: 1.1em; height: 1.1em; margin-top: 0.2em; }
+.rich-text mark { border-radius: 2px; color: inherit; padding: 0 1px; }
+.rich-editor.is-empty .rich-text::before {
+  content: attr(aria-label);
+  color: var(--ink-soft);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ed-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  margin: 0 -6px 8px;
+  padding: 2px 4px;
+  overflow-x: auto;
+  border-radius: 10px;
+  background: var(--raised);
+  border: 1px solid var(--rule);
+  scrollbar-width: none;
+  font-family: var(--ui-font);
+}
+.ed-toolbar .icon-btn { min-width: 38px; height: 40px; flex: none; }
+.ed-toolbar select { width: auto; min-height: 36px; padding: 2px 4px; border: 0; background: transparent; font-size: 16px; flex: none; }
+.ed-sep { width: 1px; height: 22px; margin: 0 4px; background: var(--rule); flex: none; }
+.ed-swatches { display: flex; gap: 3px; flex: none; }
+.swatch { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.18); background: var(--ink); flex: none; }
+.swatch.swatch-ink { background: var(--ink); }
+.swatch-hl { border-radius: 6px; }
+.swatch.is-active { outline: 2px solid var(--lapis); outline-offset: 1px; }
+
+.parallel-head { color: var(--lapis); font-family: var(--ui-font); font-size: 15px; font-weight: 700; }

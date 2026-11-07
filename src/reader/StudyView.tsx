@@ -75,7 +75,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
       </header>
       <div className="study-body">
         {chapterBookmark && <div className="ribbon" aria-hidden="true" />}
-        <ReaderPane book={book} chapter={chapter} verse={verse} />
+        <ReaderPane book={book} chapter={chapter} verse={verse} noteId={route.noteId} />
       </div>
       {sheet === 'picker' && <Picker currentBook={book} currentChapter={chapter} onClose={() => setSheet(null)} />}
       {sheet === 'reading' && <ReadingSettings onClose={() => setSheet(null)} />}
