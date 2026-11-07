@@ -1,3 +1,9 @@
 import { createRoot } from 'react-dom/client';
+import './app/fonts.ts';
+import './styles/base.css';
+import './styles/reader.css';
+import { App } from './App.tsx';
+import { useSettings } from './app/settings.ts';
 
-createRoot(document.getElementById('root')!).render(<h1 style={{ padding: 40, fontFamily: 'serif' }}>Bible Notes</h1>);
+await useSettings.getState().load();
+createRoot(document.getElementById('root')!).render(<App />);

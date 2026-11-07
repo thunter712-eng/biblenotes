@@ -1,0 +1,232 @@
+:root {
+  --paper: #FAFAF7;
+  --surface: #F0F1F4;
+  --raised: #FFFFFF;
+  --ink: #1D2230;
+  --ink-soft: #5C6272;
+  --rule: #D8DAE1;
+  --lapis: #274A9F;
+  --lapis-soft: rgba(39, 74, 159, 0.13);
+  --on-lapis: #FFFFFF;
+  --gilt: #B98F2B;
+  --danger: #A32A2A;
+  --shadow: 0 6px 28px rgba(22, 28, 48, 0.2);
+  --hl-yellow: #FFE97A;
+  --hl-green: #BFE8A8;
+  --hl-blue: #AFD8F7;
+  --hl-pink: #F9C3D7;
+  --hl-orange: #FBCE96;
+  --hl-purple: #D5C3F3;
+  --line-yellow: #C99E00;
+  --line-green: #3F9A2E;
+  --line-blue: #2778C7;
+  --line-pink: #CF3F7B;
+  --line-orange: #D9731A;
+  --line-purple: #7A4FC9;
+  --ui-font: 'Alegreya Sans', system-ui, sans-serif;
+  --tap: 44px;
+  color-scheme: light;
+}
+
+[data-theme='sepia'] {
+  --paper: #F1E4CB;
+  --surface: #E8D8B9;
+  --raised: #F8EEDA;
+  --ink: #33281A;
+  --ink-soft: #6F5D45;
+  --rule: #D5C19C;
+  --lapis: #7B2D22;
+  --lapis-soft: rgba(123, 45, 34, 0.13);
+  --gilt: #A67C1E;
+  --shadow: 0 6px 28px rgba(60, 40, 10, 0.24);
+  --hl-yellow: #F4DA69;
+  --hl-green: #BBD792;
+  --hl-blue: #A8CCDB;
+  --hl-pink: #EDBBC0;
+  --hl-orange: #EFBE85;
+  --hl-purple: #CDB9DC;
+}
+
+[data-theme='dark'] {
+  --paper: #14171F;
+  --surface: #1D212C;
+  --raised: #262B38;
+  --ink: #DADDE6;
+  --ink-soft: #979DAE;
+  --rule: #343A4A;
+  --lapis: #93ABF2;
+  --lapis-soft: rgba(147, 171, 242, 0.18);
+  --on-lapis: #10131B;
+  --gilt: #D8B65F;
+  --danger: #F08A8A;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --hl-yellow: #6C5C10;
+  --hl-green: #2E5B26;
+  --hl-blue: #1E4F78;
+  --hl-pink: #70304B;
+  --hl-orange: #734213;
+  --hl-purple: #4C3580;
+  --line-yellow: #E9C94A;
+  --line-green: #7FD06B;
+  --line-blue: #71B6F2;
+  --line-pink: #F08AB3;
+  --line-orange: #F0A258;
+  --line-purple: #B598F0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  /* The app scrolls inside panes. The document staying still stops iOS rubber-banding the toolbar away. */
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--ui-font);
+  font-size: 17px;
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3 { font-weight: 500; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--lapis); }
+:focus-visible { outline: 2px solid var(--lapis); outline-offset: 2px; }
+
+button { cursor: pointer; touch-action: manipulation; }
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  height: var(--tap);
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  position: relative;
+}
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+.icon-btn.is-active { background: var(--lapis-soft); color: var(--lapis); }
+@media (hover: hover) { .icon-btn:hover:not(:disabled):not(.is-active) { background: var(--surface); } }
+
+.btn {
+  min-height: var(--tap);
+  padding: 0 18px;
+  border: 1px solid var(--lapis);
+  border-radius: 10px;
+  background: var(--lapis);
+  color: var(--on-lapis);
+  font-weight: 500;
+}
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn-quiet { background: transparent; color: var(--lapis); }
+.btn-danger { background: transparent; border-color: var(--danger); color: var(--danger); }
+.link-btn { background: none; border: 0; padding: 8px 0; color: var(--lapis); min-height: var(--tap); }
+
+input[type='text'], input[type='search'], select, textarea {
+  min-height: var(--tap);
+  padding: 8px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--raised);
+  width: 100%;
+  /* 16px or more stops iOS zooming the page on focus. */
+  font-size: 17px;
+}
+input[type='checkbox'] { width: 22px; height: 22px; accent-color: var(--lapis); flex: none; }
+input[type='range'] { width: 100%; accent-color: var(--lapis); height: var(--tap); }
+progress { width: 100%; accent-color: var(--lapis); height: 6px; }
+
+.muted { color: var(--ink-soft); }
+.form-error { color: var(--danger); margin: 8px 0; }
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: max(24px, env(safe-area-inset-top)) 16px 24px;
+  background: rgba(16, 19, 30, 0.42);
+}
+.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  outline: none;
+}
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 20px; }
+.sheet-head h2 { font-size: 22px; }
+.sheet-body { padding: 0 20px 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sheet-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px; border-top: 1px solid var(--rule); }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field-label { color: var(--ink-soft); font-size: 15px; }
+.field-hint { color: var(--ink-soft); font-size: 14px; }
+.form-stack { display: flex; flex-direction: column; gap: 16px; }
+.check-row { display: flex; align-items: center; gap: 10px; min-height: var(--tap); }
+.check-line { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+
+.segmented { display: flex; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; background: var(--raised); }
+.segmented button { flex: 1; min-height: 42px; padding: 0 10px; border: 0; background: transparent; }
+.segmented button + button { border-left: 1px solid var(--rule); }
+.segmented button.is-active { background: var(--lapis); color: var(--on-lapis); }
+
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+.toast button { background: none; border: 0; color: inherit; font-weight: 700; text-decoration: underline; min-height: 32px; padding: 0 2px; }
+
+.page-shell { height: 100%; display: flex; flex-direction: column; padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+.page-head { display: flex; align-items: center; gap: 6px; padding: calc(env(safe-area-inset-top) + 6px) 10px 6px; border-bottom: 1px solid var(--rule); }
+.page-head h1 { font-size: 22px; flex: 1; min-width: 0; }
+.page-head-actions { display: flex; gap: 4px; align-items: center; }
+.page-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px max(20px, calc(50% - 400px)) 80px; }
+.prose { font-size: 18px; max-width: 68ch; }
+.prose h2 { font-size: 22px; margin: 28px 0 10px; }
+.prose h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.license { margin-bottom: 22px; }
+.license p { margin: 4px 0; }
+.license a { overflow-wrap: anywhere; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
