@@ -4,6 +4,7 @@ import { db } from './db/schema.ts';
 import { AboutPage } from './app/AboutPage.tsx';
 import { SearchPage } from './reader/SearchPage.tsx';
 import { StudyView } from './reader/StudyView.tsx';
+import { InkTestPage } from './ink/InkTestPage.tsx';
 import { Toasts } from './ui/primitives.tsx';
 
 function Placeholder({ title }: { title: string }) {
@@ -15,6 +16,7 @@ function renderRoute(route: Route) {
     case 'read': return <StudyView route={route} />;
     case 'search': return <SearchPage key={route.query ?? ''} initialQuery={route.query} />;
     case 'about': return <AboutPage />;
+    case 'ink-test': return <InkTestPage />;
     default: return <Placeholder title={route.name} />;
   }
 }
