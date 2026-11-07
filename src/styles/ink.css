@@ -32,8 +32,7 @@
 .ink-root.is-live-hl[data-paper='dark'] .ink-live { mix-blend-mode: screen; }
 
 .ink-toolbar { background: var(--paper); border-bottom: 1px solid var(--rule); position: relative; z-index: 12; }
-.ink-toolbar-row { display: flex; align-items: center; gap: 1px; padding: 2px 6px; overflow-x: auto; scrollbar-width: none; }
-.ink-toolbar-row::-webkit-scrollbar { display: none; }
+.ink-toolbar-row { display: flex; align-items: center; flex-wrap: wrap; gap: 1px; padding: 2px 6px; }
 .ink-toolbar .icon-btn { flex: none; min-width: 40px; }
 .ink-sep { flex: none; width: 1px; height: 24px; background: var(--rule); margin: 0 5px; }
 .ink-swatch { flex: none; width: 28px; height: 28px; margin: 0 3px; padding: 0; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.2); }

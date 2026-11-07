@@ -7,7 +7,7 @@ import { StudyView } from './reader/StudyView.tsx';
 import { InkTestPage } from './ink/InkTestPage.tsx';
 import { Toasts } from './ui/primitives.tsx';
 
-function Placeholder({ title }: { title: string }) {
+export function Placeholder({ title }: { title: string }) {
   return <p style={{ padding: 40 }}>{title}</p>;
 }
 

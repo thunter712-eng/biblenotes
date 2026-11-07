@@ -271,6 +271,16 @@ export class InkEngine {
     return { x: x * this.view.scale + this.view.x, y: y * this.view.scale + this.view.y };
   }
 
+  /** Pans so that a page position sits in the upper part of the view, if it's currently lower. */
+  bringIntoUpperView(pageY: number) {
+    const y = pageY * this.view.scale + this.view.y;
+    const target = this.vh * 0.18;
+    if (y <= this.vh * 0.4 || this.options.embedded) return;
+    this.view.y -= y - target;
+    this.viewChanged();
+    this.scheduleFull();
+  }
+
   setSelection(ids: string[]) {
     this.selection = new Set(ids);
     this.refreshSelectionBox();
@@ -761,6 +771,15 @@ export class InkEngine {
       if (this.gesture) {
         this.rejected.add(e.pointerId);
         return;
+      }
+      // A finger can drag a selection and its handles, as long as it's the only one down.
+      if (!this.touches.size && this.selectionBox) {
+        const p = this.toPage(e);
+        const b = this.selectionBox;
+        if (this.hitHandle(p.x, p.y, b) || (p.x >= b[0] && p.x <= b[2] && p.y >= b[1] && p.y <= b[3])) {
+          this.startToolGesture(e);
+          return;
+        }
       }
       this.onTouchDown(e);
       return;
@@ -1286,7 +1305,21 @@ export class InkEngine {
       this.touchMode = null;
       if (mode === 'pan' && Math.hypot(this.velocity.x, this.velocity.y) > 0.15) this.startMomentum();
       else if (mode === 'pan' || mode === 'pinch') this.scheduleFull();
-      else if (mode === 'pending' && this.selection.size) this.clearSelection();
+      else if (mode === 'pending') this.onFingerTap(e);
+    }
+  }
+
+  /** A finger tap can't draw, but it can place text and pick boxes. */
+  private onFingerTap(e: PointerEvent) {
+    if (this.selection.size) {
+      this.clearSelection();
+      return;
+    }
+    const p = this.toPage(e);
+    if (this.tool.kind === 'text') {
+      this.finishTap({ k: 'tap', id: e.pointerId, x: p.x, y: p.y, cx: e.clientX, cy: e.clientY }, e);
+    } else if (this.tool.kind === 'lasso') {
+      this.finishLasso([p.x, p.y]);
     }
   }
 

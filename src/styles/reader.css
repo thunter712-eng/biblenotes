@@ -34,8 +34,6 @@
   font-weight: 500;
 }
 
-.study-body { flex: 1; min-height: 0; display: flex; position: relative; }
-
 /* The ribbon marker: a length of gilt silk that hangs into the page while the chapter is bookmarked. */
 .ribbon {
   position: absolute;
