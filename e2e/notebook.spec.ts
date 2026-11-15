@@ -244,3 +244,24 @@ test('a handwritten note under a verse uses the ruled notebook paper', async ({ 
   });
   expect(colors).toBeGreaterThan(2);
 });
+
+test('the side page follows the chapter being read, and topic pages stay open', async ({ page }) => {
+  await openNewPage(page);
+  await expect(page.locator('.page-title-btn')).toHaveText('John 3');
+  await page.goto('#/read/GEN/1');
+  await expect(page.getByRole('button', { name: 'New page for Genesis 1' })).toBeVisible();
+  await page.getByRole('button', { name: 'New page for Genesis 1' }).click();
+  await expect(page.locator('.page-title-btn')).toHaveText('Genesis 1');
+  // Back in John 3, its own page opens again.
+  await page.goto('#/read/JHN/3');
+  await expect(page.locator('.page-title-btn')).toHaveText('John 3');
+  // A topic page isn't tied to a passage, so it stays open from book to book.
+  await page.getByRole('button', { name: 'Choose a page' }).click();
+  await page.getByLabel('New page topic').fill('Grace');
+  await page.getByLabel('New page topic').press('Enter');
+  await expect(page.locator('.page-title-btn')).toHaveText('Grace');
+  await page.goto('#/read/ROM/5');
+  await expect(page.locator('.ref-btn')).toHaveText('Romans 5');
+  await page.waitForTimeout(300);
+  await expect(page.locator('.page-title-btn')).toHaveText('Grace');
+});

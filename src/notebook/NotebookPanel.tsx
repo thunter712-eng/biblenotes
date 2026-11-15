@@ -28,15 +28,16 @@ export const NotebookPanel = forwardRef<NotebookHandle, {
 }>(function NotebookPanel({ pageId, onPageId, passage, fullscreen, onFullscreen, onClose }, ref) {
   const [sheet, setSheet] = useState<null | 'pick' | 'paper' | 'menu'>(null);
   const page = useLiveQuery(() => (pageId ? db.pages.get(pageId) : undefined), [pageId]);
-  const here = useLiveQuery(() => pagesForChapter(passage.book, passage.chapter), [passage.book, passage.chapter]);
+  // Tagged with its chapter, so a result still arriving for the previous chapter is never used for this one.
+  const here = useLiveQuery(async () => ({ key: chapterKey(passage.book, passage.chapter), pages: await pagesForChapter(passage.book, passage.chapter) }), [passage.book, passage.chapter]);
   const checked = useRef<string | null>(null);
 
   // With nothing open, prefer a page already tied to this chapter.
   useEffect(() => {
     const key = chapterKey(passage.book, passage.chapter);
-    if (pageId || !here || checked.current === key) return;
+    if (pageId || !here || here.key !== key || checked.current === key) return;
     checked.current = key;
-    if (here[0]) onPageId(here[0].id);
+    if (here.pages[0]) onPageId(here.pages[0].id);
   }, [pageId, here, passage.book, passage.chapter, onPageId]);
 
   const startPage = async () => {

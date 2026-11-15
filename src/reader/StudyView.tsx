@@ -68,6 +68,23 @@ export function StudyView({ route }: { route: ReadRoute }) {
 
   useEffect(() => { void useInkTools.getState().load(); }, []);
 
+  // Moving to another chapter closes a page tied to a different passage, so the notebook follows the reading:
+  // it then opens this chapter's page, or offers to start one. Topic pages, tied to no passage, stay open.
+  const shownChapter = useRef(chapterKey(book, chapter));
+  useEffect(() => {
+    const key = chapterKey(book, chapter);
+    if (shownChapter.current === key) return;
+    shownChapter.current = key;
+    if (!pageId || route.pageId === pageId) return;
+    const low = refKey(makeRef(book, chapter, 0));
+    const high = refKey(makeRef(book, chapter, 999));
+    void db.pages.get(pageId).then((p) => {
+      if (p && p.startKey && (p.startKey < low || p.startKey > high)) setPageIdState((cur) => (cur === pageId ? null : cur));
+    });
+    // Only a change of chapter should run this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book, chapter]);
+
   useEffect(() => {
     rememberReadHash(routeToHash(route));
     void db.kv.put({ key: 'lastPosition', value: { book, chapter, ...(verse ? { at: verse } : {}) } });

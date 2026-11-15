@@ -96,6 +96,8 @@ test('notebooks can be made, and pages renamed, moved, duplicated and deleted wi
   await page.getByRole('button', { name: 'Actions for Chapter 8' }).click();
   await page.getByRole('button', { name: 'Duplicate page' }).click();
   await expect(page.getByText('Chapter 8 copy')).toBeVisible();
+  // Pages run oldest first, so the copy comes after the original.
+  await expect(page.locator('.page-tile-title')).toHaveText(['Chapter 8', 'Chapter 8 copy']);
 
   await page.getByRole('button', { name: 'Actions for Chapter 8 copy' }).click();
   await page.getByRole('button', { name: 'Delete page' }).click();

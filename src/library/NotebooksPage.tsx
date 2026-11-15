@@ -104,7 +104,8 @@ export function NotebooksPage() {
   const openId = (chosen && notebooks?.some((n) => n.id === chosen) ? chosen : null) ?? recent ?? notebooks?.[0]?.id ?? null;
   const open = notebooks?.find((n) => n.id === openId);
   const openIndex = notebooks?.findIndex((n) => n.id === openId) ?? 0;
-  const list = pages?.filter((p) => p.notebookId === openId).sort((a, b) => b.createdAt - a.createdAt) ?? [];
+  // In the order they were written, first page first, like a paper notebook.
+  const list = pages?.filter((p) => p.notebookId === openId).sort((a, b) => a.createdAt - b.createdAt) ?? [];
   const settingsNb = notebooks?.find((n) => n.id === settingsFor);
 
   const add = async () => {
