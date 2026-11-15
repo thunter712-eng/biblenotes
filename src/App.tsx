@@ -8,6 +8,7 @@ import { InkTestPage } from './ink/InkTestPage.tsx';
 import { Toasts } from './ui/primitives.tsx';
 import { NotesIndexPage } from './library/NotesIndexPage.tsx';
 import { NotebooksPage } from './library/NotebooksPage.tsx';
+import { FavoritesPage } from './library/FavoritesPage.tsx';
 import { SettingsPage } from './app/SettingsPage.tsx';
 import { AppNotices } from './app/AppNotices.tsx';
 
@@ -19,6 +20,7 @@ function renderRoute(route: Route) {
     case 'ink-test': return <InkTestPage />;
     case 'notes': return <NotesIndexPage />;
     case 'notebooks': return <NotebooksPage />;
+    case 'favorites': return <FavoritesPage />;
     case 'settings': return <SettingsPage />;
   }
 }

@@ -39,13 +39,13 @@ test('airplane mode: after one load, everything works with no network', async ({
 
   // Writing and saving still work.
   await page.goto('#/read/JHN/3');
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.getByRole('button', { name: /^New page for/ }).click();
   await page.waitForFunction(() => !!window.__ink);
   await penStroke(page, line(60, 120, 400, 120, 20));
   await page.waitForTimeout(600);
   await page.reload();
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.waitForFunction(() => !!window.__ink && window.__ink.document.size === 1);
 });
 

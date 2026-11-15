@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './schema.ts';
-import { clearVerses, clearWords, createNote, deleteNote, highlightVerses, highlightWords, toggleBookmark } from './study.ts';
+import { addFavorite, clearVerses, clearWords, createNote, deleteFavorite, deleteNote, findFavorite, highlightVerses, highlightWords, toggleBookmark, updateFavorite } from './study.ts';
 
 beforeEach(async () => {
   await Promise.all(db.tables.map((t) => t.clear()));
@@ -53,4 +53,20 @@ it('toggles bookmarks', async () => {
   expect(await toggleBookmark('JHN.3.16')).toBe(true);
   expect(await toggleBookmark('JHN.3.16')).toBe(false);
   expect(await db.bookmarks.count()).toBe(0);
+});
+
+describe('favorites', () => {
+  it('keeps the day it was chosen and why, and is found from any of its verses', async () => {
+    const f = await addFavorite({ book: 'JHN', chapter: 3, verses: [17, 16], label: 'John 3:16–17', text: 'For God so loved', abbr: 'WEB', addedOn: '2026-11-14', why: 'Read at my baptism' });
+    expect(f.startRef).toBe('JHN.3.16');
+    expect(f.verses).toEqual([16, 17]);
+    expect((await findFavorite('JHN', 3, [17]))?.id).toBe(f.id);
+    expect(await findFavorite('JHN', 3, [18])).toBeUndefined();
+    await updateFavorite(f.id, { why: 'Read at my baptism, summer 2019', addedOn: '2019-07-07' });
+    expect((await db.favorites.get(f.id))?.addedOn).toBe('2019-07-07');
+    const undo = await deleteFavorite(f.id);
+    expect(await db.favorites.count()).toBe(0);
+    await undo();
+    expect((await db.favorites.get(f.id))?.why).toBe('Read at my baptism, summer 2019');
+  });
 });

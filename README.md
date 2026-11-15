@@ -14,7 +14,7 @@ Install it rather than using it in a Safari tab. Safari can clear data for websi
 
 ## Back up your notes
 
-Your notes exist only on this iPad, and there is no account or cloud copy. Go to **Settings → Back up now** and save the file somewhere safe, such as iCloud Drive. Settings shows when you last backed up, and the app reminds you when a backup is overdue (every two weeks unless you change it).
+Your notes exist only on this iPad, and there is no account or cloud copy. Go to **Settings → Back up now** and save the file somewhere safe, such as iCloud Drive. Settings shows when you last backed up, and the app reminds you when a backup is overdue (every week unless you change it). Tap **Back up now** on the reminder, then **Save to Files** and pick iCloud Drive.
 
 To restore, use **Settings → Restore from a backup** and choose one of these:
 
@@ -29,6 +29,10 @@ To restore, use **Settings → Restore from a backup** and choose one of these:
 | Select non-contiguous verses | Turn on **Pick separately**, or tap inside a range to remove verses |
 | Select by dragging | Drag with the Pencil, or press and hold with a finger, then drag |
 | Highlight part of a verse | Select one verse, tap **Words**, drag across them, pick a color |
+| Mark a favorite verse | Select it, tap **Favorite**, and note the date and why. **Menu → Favorite verses** lists them by year. |
+| Bookmark a chapter | Tap the gold ribbon at the top right, which also lists your bookmarks |
+| Change the layout | Use the four-way switch in the top bar: Scripture only, side by side, notebook only, full screen |
+| Date a notebook page | New pages are dated today. Tap the date on the first line to change it. |
 | Put a verse on your page | Tap **Add to page**, or press a selected verse and drag it over. **Copy** then the paste button also works. |
 | Write | The Pencil draws. One finger pans, two fingers pinch and pan. |
 | Change tool size and options | Tap the active tool again |

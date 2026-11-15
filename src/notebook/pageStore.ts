@@ -41,6 +41,11 @@ export async function flushDocument(pageId: string, doc: PageDocument) {
   });
 }
 
+/** Saves every open page now, before something like an update reload. */
+export async function flushAllDocuments() {
+  await Promise.all([...docs].map(async ([pageId, p]) => flushDocument(pageId, await p)));
+}
+
 const SAVE_DELAY_MS = 400;
 
 /**

@@ -15,7 +15,7 @@ describe('migrations', () => {
 
     const db = openDb(name);
     await db.open();
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
     expect((await db.bookmarks.get('b1'))?.createdAt).toBe(0);
     expect((await db.notes.get('n1'))?.text).toBe('keep me');
     expect(await db.bookmarks.orderBy('createdAt').count()).toBe(1);
@@ -25,7 +25,7 @@ describe('migrations', () => {
   it('opens a fresh database at the latest version', async () => {
     const db = openDb('fresh-test');
     await db.open();
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
     db.close();
   });
 });

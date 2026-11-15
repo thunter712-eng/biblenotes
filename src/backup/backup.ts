@@ -1,6 +1,6 @@
 import type { Table } from 'dexie';
 import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate';
-import { db, SCHEMA_VERSION, type Bookmark, type HistoryEntry, type Highlight, type ImageRow, type Note, type Notebook, type Page, type PageObjectRow } from '../db/schema.ts';
+import { db, SCHEMA_VERSION, type Bookmark, type Favorite, type HistoryEntry, type Highlight, type ImageRow, type Note, type Notebook, type Page, type PageObjectRow } from '../db/schema.ts';
 
 const FORMAT = 'bible-notes-backup';
 const FORMAT_VERSION = 1;
@@ -23,6 +23,8 @@ export interface BackupData {
   pages: Page[];
   pageObjects: PageObjectRow[];
   bookmarks: Bookmark[];
+  /** Missing from backups made before favorites existed. */
+  favorites?: Favorite[];
   history: HistoryEntry[];
   settings: Record<string, unknown>;
   images: BackupImage[];
@@ -55,6 +57,7 @@ export async function createBackup(): Promise<Blob> {
     pages: await db.pages.toArray(),
     pageObjects: await db.pageObjects.toArray(),
     bookmarks: await db.bookmarks.toArray(),
+    favorites: await db.favorites.toArray(),
     history: await db.history.toArray(),
     settings: Object.fromEntries(kvRows.filter(Boolean).map((r) => [r!.key, r!.value])),
     images: images.map((i) => ({ id: i.id, file: `images/${i.id}`, type: i.blob.type, createdAt: i.createdAt })),
@@ -110,7 +113,7 @@ export interface RestoreSummary {
   highlights: number;
 }
 
-const ALL_TABLES = () => [db.highlights, db.notes, db.notebooks, db.pages, db.pageObjects, db.images, db.bookmarks, db.history, db.kv];
+const ALL_TABLES = () => [db.highlights, db.notes, db.notebooks, db.pages, db.pageObjects, db.images, db.bookmarks, db.favorites, db.history, db.kv];
 
 /** Replace: this device becomes exactly what's in the backup. */
 export async function restoreReplace({ data, images }: ParsedBackup): Promise<RestoreSummary> {
@@ -123,6 +126,7 @@ export async function restoreReplace({ data, images }: ParsedBackup): Promise<Re
     await db.pages.bulkPut(data.pages);
     await db.pageObjects.bulkPut(data.pageObjects);
     await db.bookmarks.bulkPut(data.bookmarks);
+    await db.favorites.bulkPut(data.favorites ?? []);
     await db.history.bulkPut(data.history);
     await db.images.bulkPut(images);
     await db.kv.bulkPut(Object.entries(data.settings ?? {}).map(([key, value]) => ({ key, value })));
@@ -149,6 +153,7 @@ export async function restoreMerge({ data, images }: ParsedBackup): Promise<Rest
     summary.highlights = (await mergeByUpdatedAt(db.highlights, data.highlights)).length;
     summary.notes = (await mergeByUpdatedAt(db.notes, data.notes)).length;
     await mergeByUpdatedAt(db.notebooks, data.notebooks);
+    await mergeByUpdatedAt(db.favorites, data.favorites ?? []);
     const newerPages = await mergeByUpdatedAt(db.pages, data.pages);
     summary.pages = newerPages.length;
     for (const page of newerPages) {
@@ -167,4 +172,4 @@ export async function restoreMerge({ data, images }: ParsedBackup): Promise<Rest
 
 export const lastBackupAt = async (): Promise<number | null> => ((await db.kv.get('lastBackupAt'))?.value as number | undefined) ?? null;
 
-export const hasAnyWork = async (): Promise<boolean> => (await db.notes.count()) + (await db.pages.count()) + (await db.highlights.count()) > 0;
+export const hasAnyWork = async (): Promise<boolean> => (await db.notes.count()) + (await db.pages.count()) + (await db.highlights.count()) + (await db.favorites.count()) > 0;

@@ -3,9 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { fontCss } from '../app/fonts.ts';
 import { useSettings } from '../app/settings.ts';
 import { getBook } from '../bible/books.ts';
-import { chapterKey, makeRef, parseVerseRef } from '../bible/refs.ts';
-import { db, type Note } from '../db/schema.ts';
-import { updateNote } from '../db/study.ts';
+import { chapterKey, formatVerses, makeRef, parseVerseRef } from '../bible/refs.ts';
+import { getVerseTexts } from '../bible/data.ts';
+import { db, type Favorite, type Note } from '../db/schema.ts';
+import { findFavorite, updateNote } from '../db/study.ts';
+import { FavoriteSheet, type FavoriteDraft } from './FavoriteSheet.tsx';
 import { ActionBar } from './ActionBar.tsx';
 import { ChapterText, NO_DECOR, ParallelText, type VerseDecor } from './ChapterText.tsx';
 import { InlineNoteCard } from './InlineNotes.tsx';
@@ -41,6 +43,8 @@ export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onIn
   const key = chapterKey(book, chapter);
   const highlights = useLiveQuery(() => db.highlights.where('chapterKey').equals(key).toArray(), [key]);
   const notes = useLiveQuery(() => db.notes.where('chapterKey').equals(key).toArray(), [key]);
+  const favorites = useLiveQuery(() => db.favorites.where('chapterKey').equals(key).toArray(), [key]);
+  const [favSheet, setFavSheet] = useState<{ favorite?: Favorite; draft?: FavoriteDraft } | null>(null);
   const sel = useSelection();
   const [focusNote, setFocusNote] = useState<string | null>(null);
 
@@ -129,6 +133,7 @@ export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onIn
     };
     for (const h of highlights ?? []) get(parseVerseRef(h.startRef).verse).highlights.push(h);
     for (const n of notes ?? []) get(parseVerseRef(n.anchorStartRef).verse).hasNotes = true;
+    for (const f of favorites ?? []) for (const v of f.verses) get(v).favorite = true;
     for (const v of sel.verses) get(v).selected = true;
     if (sel.wordVerse !== null) {
       const d = get(sel.wordVerse);
@@ -136,7 +141,7 @@ export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onIn
       d.words = sel.words;
     }
     return map;
-  }, [highlights, notes, sel.verses, sel.wordVerse, sel.words]);
+  }, [highlights, notes, favorites, sel.verses, sel.wordVerse, sel.words]);
   const decorFor = useCallback((v: number) => decorMap.get(v) ?? NO_DECOR, [decorMap]);
 
   const openAfter = useMemo(() => {
@@ -162,8 +167,19 @@ export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onIn
     for (const n of here) void updateNote(n.id, { collapsed: anyOpen });
   }, [notes, book, chapter]);
 
+  const onFavoriteMarker = useCallback((v: number) => {
+    const favorite = favorites?.find((f) => f.verses.includes(v));
+    if (favorite) setFavSheet({ favorite });
+  }, [favorites]);
+
   const parallel = s.parallel && s.parallelTranslation !== s.translation;
   const abbr = translations.find((t) => t.id === s.translation)?.abbr ?? s.translation.toUpperCase();
+  const onFavorite = async (verses: number[]) => {
+    const existing = await findFavorite(book, chapter, verses);
+    if (existing) { setFavSheet({ favorite: existing }); return; }
+    const text = await getVerseTexts(s.translation, book, chapter, verses);
+    setFavSheet({ draft: { book, chapter, verses, label: formatVerses(book, chapter, verses), text, abbr } });
+  };
   const rightAbbr = translations.find((t) => t.id === s.parallelTranslation)?.abbr ?? '';
 
   return (
@@ -182,13 +198,14 @@ export function ReaderPane({ book, chapter, verse, at, noteId, onAddToPage, onIn
           {main.error && <p className="form-error">{main.error}</p>}
           {parallel && <div className="parallel-row parallel-head"><span>{abbr}</span><span>{rightAbbr}</span></div>}
           {main.data && (parallel && second.data ? (
-            <ParallelText left={main.data} right={second.data} leftId={s.translation} rightId={s.parallelTranslation} showNumbers={s.showVerseNumbers} decorFor={decorFor} hasAfter={hasAfter} renderAfter={renderAfter} onMarker={onMarker} />
+            <ParallelText left={main.data} right={second.data} leftId={s.translation} rightId={s.parallelTranslation} showNumbers={s.showVerseNumbers} decorFor={decorFor} hasAfter={hasAfter} renderAfter={renderAfter} onMarker={onMarker} onFavoriteMarker={onFavoriteMarker} />
           ) : (
-            <ChapterText data={main.data} chapter={chapter} translation={s.translation} showNumbers={s.showVerseNumbers} decorFor={decorFor} hasAfter={hasAfter} renderAfter={renderAfter} onMarker={onMarker} />
+            <ChapterText data={main.data} chapter={chapter} translation={s.translation} showNumbers={s.showVerseNumbers} decorFor={decorFor} hasAfter={hasAfter} renderAfter={renderAfter} onMarker={onMarker} onFavoriteMarker={onFavoriteMarker} />
           ))}
         </article>
       </div>
-      <ActionBar book={book} chapter={chapter} abbr={abbr} onNoteCreated={setFocusNote} onAddToPage={onAddToPage} onInkNote={onInkNote} />
+      <ActionBar book={book} chapter={chapter} abbr={abbr} onNoteCreated={setFocusNote} onAddToPage={onAddToPage} onInkNote={onInkNote} onFavorite={(v) => void onFavorite(v)} />
+      {favSheet && <FavoriteSheet {...favSheet} onClose={() => setFavSheet(null)} />}
     </div>
   );
 }

@@ -25,7 +25,7 @@ async function addTypedNote(page: Page, hash: string, v: number, text: string) {
 
 async function pageWithInk(page: Page) {
   await page.goto('#/read/JHN/3');
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.getByRole('button', { name: /^New page for/ }).click();
   await page.waitForFunction(() => !!window.__ink);
   await penStroke(page, line(60, 120, 400, 120, 20));
@@ -38,6 +38,7 @@ async function pageWithInk(page: Page) {
 test('the notes index lists everything in Bible order, filters, and jumps to the note', async ({ page }) => {
   await addTypedNote(page, '#/read/ROM/8', 1, 'No condemnation');
   await addTypedNote(page, '#/read/GEN/1', 1, 'In the beginning');
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Notes index' }).click();
   await expect(page.locator('.index-group h2')).toHaveText(['Genesis', 'Romans']);
 
@@ -52,6 +53,7 @@ test('a collapsed note reopens when reached from the index', async ({ page }) =>
   await addTypedNote(page, '#/read/ROM/8', 1, 'Tucked away');
   await page.getByRole('button', { name: 'Collapse note' }).click();
   await expect(page.locator('.inline-note')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Notes index' }).click();
   await page.locator('.index-open').click();
   await expect(page.locator('.inline-note .rich-text')).toContainText('Tucked away');
@@ -60,6 +62,7 @@ test('a collapsed note reopens when reached from the index', async ({ page }) =>
 test('tags can be added and filtered on', async ({ page }) => {
   await addTypedNote(page, '#/read/ROM/8', 1, 'Tagged');
   await addTypedNote(page, '#/read/GEN/1', 1, 'Untagged');
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Notes index' }).click();
   await page.locator('.index-entry', { hasText: 'Tagged' }).filter({ hasText: 'Romans' }).getByRole('button', { name: 'Add tags' }).click();
   await page.getByLabel('Add a tag').fill('grace');
@@ -74,8 +77,10 @@ test('notebooks can be made, and pages renamed, moved, duplicated and deleted wi
   await expect(page.getByText('Notebooks group your pages')).toBeVisible();
   await page.getByLabel('New notebook name').fill('Romans study');
   await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'New notebook' }).click();
   await page.getByLabel('New notebook name').fill('Sermon notes');
   await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: /^Romans study, / }).click();
   await page.getByRole('button', { name: 'New page in Romans study' }).click();
   await expect(page.locator('.notebook-canvas')).toBeVisible();
   await page.goBack();
@@ -85,6 +90,7 @@ test('notebooks can be made, and pages renamed, moved, duplicated and deleted wi
   await page.getByLabel('Page title').blur();
   await page.getByRole('combobox', { name: 'Notebook' }).selectOption({ label: 'Sermon notes' });
   await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: /^Sermon notes, / }).click();
   await expect(page.locator('section', { hasText: 'Sermon notes' }).getByText('Chapter 8')).toBeVisible();
 
   await page.getByRole('button', { name: 'Actions for Chapter 8' }).click();
@@ -102,7 +108,7 @@ test('notebooks can be made, and pages renamed, moved, duplicated and deleted wi
 test('back up, wipe, and restore brings back notes and ink', async ({ page }, info) => {
   await addTypedNote(page, '#/read/JHN/3', 16, 'Back me up');
   await page.locator('.ref-btn').waitFor();
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.getByRole('button', { name: /^New page for/ }).click();
   await page.waitForFunction(() => !!window.__ink);
   await penStroke(page, line(60, 120, 400, 120, 20));
@@ -134,7 +140,7 @@ test('back up, wipe, and restore brings back notes and ink', async ({ page }, in
 
   await page.goto('#/read/JHN/3');
   await expect(page.locator('.inline-note .rich-text')).toContainText('Back me up');
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.waitForFunction(() => !!window.__ink && window.__ink.document.size === 1);
 });
 

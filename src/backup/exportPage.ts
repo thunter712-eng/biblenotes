@@ -3,7 +3,7 @@ import { db, type Notebook, type Page } from '../db/schema.ts';
 import { fontCss } from '../app/fonts.ts';
 import { drawInk } from '../ink/brushes.ts';
 import { objectBbox } from '../ink/geometry.ts';
-import { drawPaper } from '../ink/paper.ts';
+import { dateSlot, drawPaper, formatPageDate, PAGE_HAND_FONT, pageHeading, pageInk } from '../ink/paper.ts';
 import { PAGE_WIDTH, SHEET_HEIGHT, isHighlighter, type ImageObject, type PageObject, type QuoteObject, type ShapeObject, type StrokeObject, type TextBoxObject } from '../ink/types.ts';
 import { imageUrl } from '../notebook/images.ts';
 import { flushDocument, loadDocument } from '../notebook/pageStore.ts';
@@ -73,6 +73,23 @@ export async function renderSheet(page: Page, objects: readonly PageObject[], sh
   const dark = page.paperColor === 'dark';
   ctx.setTransform(scale, 0, 0, scale, 0, -top * scale);
   drawPaper(ctx, { template: page.template, paperColor: page.paperColor, sheets: page.sheets }, rect, scale);
+  if (sheet === 0) {
+    const slot = dateSlot(page.template);
+    const baseline = slot.y + slot.h * 0.86;
+    ctx.font = `${slot.size}px ${PAGE_HAND_FONT}`;
+    ctx.fillStyle = pageInk(page.paperColor);
+    ctx.textBaseline = 'alphabetic';
+    const heading = pageHeading(page.title);
+    if (heading) {
+      ctx.textAlign = 'left';
+      ctx.fillText(heading, slot.left, baseline, slot.right - 220 - slot.left);
+    }
+    if (page.date) {
+      ctx.textAlign = 'right';
+      ctx.fillText(formatPageDate(page.date), slot.right, baseline);
+    }
+    ctx.textAlign = 'left';
+  }
 
   const visible = objects.filter((o) => {
     const b = objectBbox(o);

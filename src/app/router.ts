@@ -4,6 +4,7 @@ export type Route =
   | { name: 'read'; book: string; chapter: number; verse?: number; at?: number; pageId?: string; noteId?: string }
   | { name: 'notes' }
   | { name: 'notebooks' }
+  | { name: 'favorites' }
   | { name: 'search'; query?: string }
   | { name: 'settings' }
   | { name: 'about' }
@@ -30,6 +31,7 @@ export function parseHash(hash: string): Route | null {
     }
     case 'notes': return { name: 'notes' };
     case 'notebooks': return { name: 'notebooks' };
+    case 'favorites': return { name: 'favorites' };
     case 'search': return { name: 'search', query: q.get('q') ?? undefined };
     case 'settings': return { name: 'settings' };
     case 'about': return { name: 'about' };

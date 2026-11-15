@@ -22,6 +22,8 @@ export function InlineInk({ note }: { note: Note }) {
   const tool = useInkTools(useShallow(selectToolConfig));
   const height = (note.content as { h?: number } | undefined)?.h ?? DEFAULT_HEIGHT;
   const paperColor = theme === 'dark' ? 'dark' as const : 'white' as const;
+  // The same ruled paper as the notebook pages, so handwriting lines up the same way in both places.
+  const template = 'college' as const;
 
   useEffect(() => {
     if (!note.pageId) return;
@@ -31,7 +33,7 @@ export function InlineInk({ note }: { note: Note }) {
       if (cancelled || !host.current) return;
       docRef.current = doc;
       stop = attachAutosave(note.pageId!, doc);
-      const e = new InkEngine(host.current, doc, { template: 'blank', paperColor, sheets: 4 }, {
+      const e = new InkEngine(host.current, doc, { template, paperColor, sheets: 4 }, {
         embedded: true,
         onHistory: () => setTick((t) => t + 1),
       });
@@ -49,7 +51,7 @@ export function InlineInk({ note }: { note: Note }) {
   }, [note.pageId]);
 
   useEffect(() => { engineRef.current?.setTool(tool); }, [tool]);
-  useEffect(() => { engineRef.current?.setMeta({ template: 'blank', paperColor, sheets: 4 }); }, [paperColor]);
+  useEffect(() => { engineRef.current?.setMeta({ template, paperColor, sheets: 4 }); }, [paperColor]);
 
   const doc = docRef.current;
   return (

@@ -12,7 +12,7 @@ import { useQuoteClipboard } from './quoteClipboard.ts';
 
 const COLORS: HighlightColor[] = ['yellow', 'green', 'blue', 'pink', 'orange', 'purple'];
 
-export function ActionBar({ book, chapter, abbr, onNoteCreated, onAddToPage, onInkNote }: {
+export function ActionBar({ book, chapter, abbr, onNoteCreated, onAddToPage, onInkNote, onFavorite }: {
   book: string;
   chapter: number;
   abbr: string;
@@ -20,6 +20,7 @@ export function ActionBar({ book, chapter, abbr, onNoteCreated, onAddToPage, onI
   /** Present when a notebook page is open. */
   onAddToPage?: () => void;
   onInkNote?: () => void;
+  onFavorite: (verses: number[]) => void;
 }) {
   const sel = useSelection();
   const translation = useSettings((s) => s.translation);
@@ -113,6 +114,7 @@ export function ActionBar({ book, chapter, abbr, onNoteCreated, onAddToPage, onI
         <button type="button" className="action" onClick={() => void typedNote()}><Icon name="note" size={20} />Typed note</button>
         {onInkNote && <button type="button" className="action" onClick={() => { onInkNote(); }}><Icon name="pen" size={20} />Handwritten note</button>}
         <button type="button" className="action" onClick={() => void copy()}><Icon name="copy" size={20} />Copy</button>
+        <button type="button" className="action" onClick={() => { onFavorite([...sel.verses]); finish(); }}><Icon name="star" size={20} />Favorite</button>
         <button type="button" className="action" onClick={() => void bookmark()}><Icon name="bookmark" size={20} />Bookmark</button>
         {onAddToPage && <button type="button" className="action" onClick={onAddToPage}><Icon name="paste" size={20} />Add to page</button>}
         <button type="button" className={`action ${sel.additive ? 'is-active' : ''}`} aria-pressed={sel.additive} onClick={() => sel.setAdditive(!sel.additive)}><Icon name="plus" size={20} />Pick separately</button>

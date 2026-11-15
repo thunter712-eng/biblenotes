@@ -10,6 +10,7 @@ export interface VerseDecor {
   highlights: Highlight[];
   selected: boolean;
   hasNotes: boolean;
+  favorite: boolean;
   wordMode: boolean;
   words: WordSelection | null;
 }
@@ -28,11 +29,12 @@ function wordStyles(count: number, highlights: Highlight[]): (Highlight | null)[
   return out;
 }
 
-const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, translation }: {
+const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, onFavoriteMarker, translation }: {
   verse: DecodedVerse;
   decor: VerseDecor;
   showNumber: boolean;
   onMarker?: (v: number) => void;
+  onFavoriteMarker?: (v: number) => void;
   translation: string;
 }) {
   const relevant = decor.highlights.filter((h) => !h.wordRange || h.translation === translation);
@@ -79,7 +81,13 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
 
   return (
     <span className={`v ${decor.selected ? 'is-selected' : ''} ${decor.wordMode ? 'is-wordmode' : ''}`} data-v={verse.number} id={`v-${translation}-${verse.number}`} tabIndex={0} aria-label={`Verse ${verse.number}${decor.selected ? ', selected' : ''}`}>
-      {showNumber && <sup className="vn">{verse.number}</sup>}
+      {decor.favorite ? (
+        // Kept on one line with the verse number, so the star never wraps away from its verse.
+        <span className="vn-fav">
+          {showNumber && <sup className="vn">{verse.number}</sup>}
+          <button type="button" className="fav-marker" aria-label={`Favorite: verse ${verse.number}. Show why`} onClick={() => onFavoriteMarker?.(verse.number)} />
+        </span>
+      ) : showNumber && <sup className="vn">{verse.number}</sup>}
       {decor.hasNotes && (
         <button type="button" className="note-marker" aria-label={`Show notes on verse ${verse.number}`} onClick={() => onMarker?.(verse.number)} />
       )}
@@ -88,7 +96,7 @@ const VerseBody = memo(function VerseBody({ verse, decor, showNumber, onMarker, 
   );
 });
 
-export const NO_DECOR: VerseDecor = { highlights: [], selected: false, hasNotes: false, wordMode: false, words: null };
+export const NO_DECOR: VerseDecor = { highlights: [], selected: false, hasNotes: false, favorite: false, wordMode: false, words: null };
 
 type Block = { type: 'p' | 'q'; verses: DecodedVerse[]; key: number } | { type: 'after'; verse: number; key: number };
 
@@ -118,10 +126,11 @@ export interface ChapterTextProps {
   renderAfter?: (v: number) => ReactNode;
   hasAfter?: (v: number) => boolean;
   onMarker?: (v: number) => void;
+  onFavoriteMarker?: (v: number) => void;
 }
 
 /** Flowing single-translation text with a printed-Bible drop numeral. */
-export function ChapterText({ data, chapter, translation, showNumbers, decorFor, renderAfter, hasAfter, onMarker }: ChapterTextProps) {
+export function ChapterText({ data, chapter, translation, showNumbers, decorFor, renderAfter, hasAfter, onMarker, onFavoriteMarker }: ChapterTextProps) {
   const blocks = buildBlocks(data.verses, hasAfter ?? (() => false));
   let dropped = false;
   return (
@@ -136,7 +145,7 @@ export function ChapterText({ data, chapter, translation, showNumbers, decorFor,
             {block.verses[0].labels?.map((l, i) => <p key={i} className="verse-label">{l}</p>)}
             {drop && <span className="drop-numeral" aria-hidden="true">{chapter}</span>}
             {block.verses.map((v, i) => (
-              <VerseBody key={v.number} verse={v} translation={translation} decor={decorFor(v.number)} showNumber={showNumbers && !(drop && i === 0 && v.number === 1)} onMarker={onMarker} />
+              <VerseBody key={v.number} verse={v} translation={translation} decor={decorFor(v.number)} showNumber={showNumbers && !(drop && i === 0 && v.number === 1)} onMarker={onMarker} onFavoriteMarker={onFavoriteMarker} />
             ))}
           </div>
         );
@@ -146,7 +155,7 @@ export function ChapterText({ data, chapter, translation, showNumbers, decorFor,
 }
 
 /** Two translations in verse-aligned rows, so each verse sits beside its counterpart. */
-export function ParallelText({ left, right, leftId, rightId, showNumbers, decorFor, renderAfter, hasAfter, onMarker }: {
+export function ParallelText({ left, right, leftId, rightId, showNumbers, decorFor, renderAfter, hasAfter, onMarker, onFavoriteMarker }: {
   left: ChapterData;
   right: ChapterData;
   leftId: string;
@@ -156,13 +165,14 @@ export function ParallelText({ left, right, leftId, rightId, showNumbers, decorF
   renderAfter?: (v: number) => ReactNode;
   hasAfter?: (v: number) => boolean;
   onMarker?: (v: number) => void;
+  onFavoriteMarker?: (v: number) => void;
 }) {
   const leftMap = new Map(left.verses.map((v) => [v.number, v]));
   const rightMap = new Map(right.verses.map((v) => [v.number, v]));
   const numbers = [...new Set([...leftMap.keys(), ...rightMap.keys()])].sort((a, b) => a - b);
   const cell = (v: DecodedVerse | undefined, id: string, n: number) => (
     <div className="parallel-cell">
-      {v ? <VerseBody verse={v} translation={id} decor={decorFor(n)} showNumber={showNumbers} onMarker={onMarker} /> : null}
+      {v ? <VerseBody verse={v} translation={id} decor={decorFor(n)} showNumber={showNumbers} onMarker={onMarker} onFavoriteMarker={onFavoriteMarker} /> : null}
     </div>
   );
   return (

@@ -8,7 +8,7 @@ declare global {
 const verse = (page: Page, n: number) => page.locator(`.reader [data-v="${n}"]`).first();
 
 async function openNewPage(page: Page) {
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.getByRole('button', { name: /^New page for/ }).click();
   await expect(page.getByTestId('notebook-canvas')).toBeVisible();
   await page.waitForFunction(() => !!window.__ink);
@@ -58,7 +58,7 @@ test('the definition of done, start to finish', async ({ page }) => {
   await page.reload();
   await expect(verse(page, 16).locator('.hl-c-yellow')).toBeVisible();
   await expect(page.locator('.inline-note .rich-text')).toContainText('Love sends.');
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await page.waitForFunction(() => !!window.__ink && window.__ink.document.size === 3);
 });
 
@@ -133,7 +133,7 @@ test('a text box takes rich text, can change font, and persists', async ({ page 
 
   await page.waitForTimeout(700);
   await page.reload();
-  await page.getByRole('button', { name: 'Open notebook page' }).click();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click();
   await expect(page.locator('.page-text strong')).toContainText('Grace alone');
 });
 
@@ -211,4 +211,36 @@ test('a handwritten note under a verse takes ink and keeps it', async ({ page })
     return n > 100;
   });
   expect(painted).toBeTruthy();
+});
+
+test('a new page is dated today on its first row, and the date can be changed', async ({ page }) => {
+  await openNewPage(page);
+  const date = page.getByLabel('Page date');
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  await expect(date).toHaveValue(today);
+  await date.fill('2026-03-01');
+  await expect(page.locator('.page-date span')).toHaveText(new Date(2026, 2, 1).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }));
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/date.png' });
+  await page.waitForTimeout(300);
+  await page.reload();
+  await page.getByRole('button', { name: 'Scripture and notebook' }).click().catch(() => {});
+  await expect(page.getByLabel('Page date')).toHaveValue('2026-03-01');
+});
+
+test('a handwritten note under a verse uses the ruled notebook paper', async ({ page }) => {
+  await verse(page, 16).click();
+  await page.getByRole('button', { name: 'Handwritten note' }).click();
+  await page.locator('[data-testid="inline-ink"].ink-root').waitFor();
+  await page.waitForTimeout(200);
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/inline.png' });
+  // Ruled paper paints lines on the paper layer; blank paper is one flat fill.
+  const colors = await page.evaluate(() => {
+    const c = document.querySelector<HTMLCanvasElement>('[data-testid="inline-ink"] .ink-paper')!;
+    const d = c.getContext('2d')!.getImageData(0, 0, c.width, c.height).data;
+    const seen = new Set<number>();
+    for (let i = 0; i < d.length; i += 4 * 7) seen.add((d[i] << 16) | (d[i + 1] << 8) | d[i + 2]);
+    return seen.size;
+  });
+  expect(colors).toBeGreaterThan(2);
 });

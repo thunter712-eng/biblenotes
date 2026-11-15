@@ -1,5 +1,6 @@
 import { newId } from '../app/ids.ts';
 import { formatRange, refKey, type VerseRef } from '../bible/refs.ts';
+import { todayIso } from '../ink/paper.ts';
 import { fromStored, toStored, type StoredObject } from '../ink/codec.ts';
 import { db, type Notebook, type Page, type PaperColor, type PaperTemplate } from './schema.ts';
 
@@ -41,6 +42,8 @@ export async function createPage(o: NewPageOptions = {}): Promise<Page> {
     template: o.template ?? 'college',
     paperColor: o.paperColor ?? 'white',
     sheets: 1,
+    // Notebook pages start dated today. The hidden pages behind inline-ink notes have no date row.
+    date: o.noteId ? undefined : todayIso(),
     text: '',
     noteId: o.noteId,
     tags: [],

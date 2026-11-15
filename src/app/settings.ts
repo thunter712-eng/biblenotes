@@ -27,7 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
   readerSize: 21,
   readerLeading: 1.55,
   fingerDraws: false,
-  backupReminderDays: 14,
+  backupReminderDays: 7,
   splitRatio: 0.48,
   showVerseNumbers: true,
 };

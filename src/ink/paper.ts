@@ -2,7 +2,7 @@ import { PAGE_WIDTH, SHEET_HEIGHT, type Bbox, type PageMeta } from './types.ts';
 import type { PaperColor, PaperTemplate } from '../db/schema.ts';
 
 export const PAPER_COLORS: Record<PaperColor, { fill: string; line: string; strong: string; margin: string }> = {
-  white: { fill: '#FFFFFF', line: 'rgba(58, 96, 170, 0.32)', strong: 'rgba(58, 96, 170, 0.55)', margin: 'rgba(200, 60, 60, 0.42)' },
+  white: { fill: '#FEFEFB', line: 'rgba(58, 96, 170, 0.32)', strong: 'rgba(58, 96, 170, 0.55)', margin: 'rgba(200, 60, 60, 0.42)' },
   cream: { fill: '#FBF6E7', line: 'rgba(120, 100, 60, 0.3)', strong: 'rgba(120, 100, 60, 0.55)', margin: 'rgba(180, 70, 50, 0.4)' },
   dark: { fill: '#1C1F29', line: 'rgba(170, 185, 225, 0.2)', strong: 'rgba(170, 185, 225, 0.4)', margin: 'rgba(235, 120, 120, 0.32)' },
 };
@@ -102,4 +102,36 @@ export function drawPaper(ctx: CanvasRenderingContext2D, meta: PageMeta, rect: B
       ctx.setLineDash([]);
     }
   }
+}
+
+/**
+ * Where the page date goes: right-aligned on the first row of a lined page, or in the title band
+ * of a Cornell page. Page units; `y` is the row's top and `h` its height, with text sitting on the row's line.
+ */
+export function dateSlot(template: PaperTemplate): { left: number; right: number; y: number; h: number; size: number } {
+  const right = PAGE_WIDTH - 28;
+  const rule = RULE[template];
+  // Caveat is a small handwriting face, so it's set larger than the rule to look like real writing on the line.
+  if (rule) return { left: LEFT_MARGIN + 14, right, y: TOP_MARGIN, h: rule, size: Math.round(rule * 1.15) };
+  if (template === 'cornell') return { left: 20, right, y: 83 - 38, h: 38, size: 32 };
+  return { left: 28, right, y: 44, h: 32, size: 32 };
+}
+
+/** The handwriting face for the page date and title, in the default ink color. */
+export const PAGE_HAND_FONT = "'Caveat', 'Patrick Hand', cursive";
+export const pageInk = (paper: PaperColor) => (paper === 'dark' ? '#ECEEF4' : '#1B1F2B');
+/** Untitled pages get no heading written on them. */
+export const pageHeading = (title: string) => (/^untitled page$/i.test(title.trim()) ? '' : title.trim());
+
+/** "2026-11-14" for today in the device's time zone. */
+export function todayIso(d = new Date()): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+/** "Nov 14, 2026". The ISO date is read as a local date, so it never shifts a day. */
+export function formatPageDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }

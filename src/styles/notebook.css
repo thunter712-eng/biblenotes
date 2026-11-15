@@ -112,3 +112,110 @@
 .install-tip { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 58px); transform: translateX(-50%); z-index: 45; display: flex; align-items: flex-start; gap: 6px; width: min(620px, calc(100vw - 24px)); padding: 10px 6px 10px 16px; border: 1px solid var(--rule); border-left: 3px solid var(--gilt); border-radius: 12px; background: var(--raised); box-shadow: var(--shadow); }
 .install-tip p { margin: 0; flex: 1; }
 .install-tip strong { font-weight: 700; }
+
+.update-banner { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 58px); transform: translateX(-50%); z-index: 46; display: flex; align-items: center; gap: 14px; width: min(520px, calc(100vw - 24px)); padding: 8px 8px 8px 16px; border: 1px solid var(--rule); border-left: 3px solid var(--lapis); border-radius: 12px; background: var(--raised); color: var(--ink); box-shadow: var(--shadow); }
+.update-banner span { flex: 1; font-weight: 500; }
+
+/* The date on the first row of a notebook page. A transparent native date input over it opens the iPad picker. */
+.page-date { position: absolute; display: flex; align-items: flex-end; justify-content: flex-end; white-space: nowrap; line-height: 1; }
+.page-heading { position: absolute; display: flex; align-items: flex-end; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1; pointer-events: none !important; }
+.page-date.is-empty span { opacity: 0.4; font-style: italic; }
+.page-date input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; padding: 0; margin: 0; font-size: 16px; cursor: pointer; -webkit-appearance: none; appearance: none; }
+
+/* Favorite verses: a dated record, like the front pages of a family Bible. */
+.fav-quote { margin: 4px 0 18px; padding: 12px 16px; border-left: 3px solid var(--gilt); background: color-mix(in srgb, var(--gilt) 9%, transparent); border-radius: 0 8px 8px 0; }
+.fav-quote blockquote { margin: 0; font-family: 'EB Garamond', Georgia, serif; font-size: 20px; line-height: 1.45; }
+.fav-quote figcaption { margin-top: 6px; color: var(--ink-soft); font-size: 15px; }
+.sheet-foot-gap { flex: 1; }
+.fav-empty { margin-top: 32px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; font-size: 18px; max-width: 34em; }
+.fav-year + .fav-year { margin-top: 40px; }
+.fav-year-head { font-family: 'EB Garamond', Georgia, serif; font-size: 40px; font-weight: 400; color: var(--gilt); line-height: 1; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.fav-list { list-style: none; margin: 0; padding: 0; }
+.fav-entry { display: grid; grid-template-columns: 9.5em 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--rule); }
+.fav-date { font-family: 'EB Garamond', Georgia, serif; font-size: 20px; color: var(--ink-soft); padding-top: 2px; }
+.fav-body { min-width: 0; max-width: 36em; }
+.fav-ref { padding: 0; border: 0; background: none; color: var(--lapis); font-weight: 500; font-size: 17px; min-height: 0; }
+.fav-text { margin: 6px 0 10px; font-family: 'EB Garamond', Georgia, serif; font-size: 22px; line-height: 1.45; }
+.fav-why { margin: 0; font-family: 'Caveat', cursive; font-size: 25px; line-height: 1.25; color: var(--ink); white-space: pre-wrap; }
+.fav-why.is-empty { font-family: inherit; font-size: 16px; color: var(--ink-soft); }
+@media (max-width: 640px) {
+  .fav-entry { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ---------------------------------------------------------------- the bookshelf */
+.cloth-lapis { --cloth: #2B4A86; }
+.cloth-oxblood { --cloth: #6B2330; }
+.cloth-forest { --cloth: #2E5440; }
+.cloth-slate { --cloth: #485261; }
+.cloth-ochre { --cloth: #9A6A24; }
+.cloth-plum { --cloth: #533760; }
+:root { --gilt-stamp: #E4C77E; }
+
+.shelf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 22px 20px;
+  padding: 8px 4px 0;
+}
+.shelf-slot { position: relative; padding-bottom: 14px; }
+/* The ledge each row of books stands on. */
+.shelf-slot::after { content: ''; position: absolute; left: -10px; right: -10px; bottom: 0; height: 8px; background: color-mix(in srgb, var(--ink) 9%, var(--surface)); box-shadow: 0 3px 6px rgba(22, 28, 48, 0.12); }
+
+.cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 132px;
+  height: 176px;
+  padding: 22px 14px 18px 22px;
+  border: 0;
+  border-radius: 3px 8px 8px 3px;
+  color: var(--gilt-stamp);
+  text-align: center;
+  /* A faint woven cloth, darker at the spine. */
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.32) 0, rgba(0, 0, 0, 0.12) 9px, rgba(255, 255, 255, 0.07) 11px, transparent 14px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 3px),
+    var(--cloth);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), 2px 3px 8px rgba(22, 28, 48, 0.25);
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 220ms;
+}
+/* A blind-stamped gilt frame. */
+.cover::before { content: ''; position: absolute; inset: 10px 9px 10px 18px; border: 1px solid color-mix(in srgb, var(--gilt-stamp) 55%, transparent); border-radius: 2px; pointer-events: none; }
+.cover-title { position: relative; font-family: 'EB Garamond', Georgia, serif; font-size: 19px; line-height: 1.15; font-weight: 600; letter-spacing: 0.01em; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.cover-count { position: relative; font-size: 13px; color: color-mix(in srgb, var(--gilt-stamp) 75%, transparent); }
+.cover.is-open { transform: translateY(-10px); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), 3px 14px 18px rgba(22, 28, 48, 0.3); }
+.cover:focus-visible { outline: 3px solid var(--lapis); outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { .cover { transition: none; } }
+
+.cover-new { background: none; box-shadow: none; border: 1.5px dashed var(--rule); color: var(--ink-soft); padding: 14px; font-size: 16px; }
+.cover-new::before { display: none; }
+.cover-new.is-form { justify-content: center; gap: 10px; }
+.cover-new.is-form input { width: 100%; font-size: 16px; padding: 6px 8px; }
+.cover-new.is-form .btn { width: 100%; padding: 0 8px; font-size: 15px; }
+
+.shelf-open { margin-top: 30px; }
+.shelf-open h2 { font-family: 'EB Garamond', Georgia, serif; font-size: 30px; font-weight: 500; }
+.spine-dot { width: 10px; height: 28px; border-radius: 2px; background: var(--cloth); flex: none; }
+.notebook-row .btn-quiet { display: inline-flex; align-items: center; gap: 4px; border-color: transparent; }
+.shelf-empty { margin-top: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+
+.page-grid { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 26px 20px; }
+.page-tile { position: relative; display: flex; flex-direction: column; }
+.page-tile .page-tile-open { flex-direction: column; align-items: stretch; gap: 3px; padding: 0; border: 0; min-height: 0; }
+.page-thumb { display: block; aspect-ratio: 816 / 1056; border-radius: 3px; overflow: hidden; background: #FEFEFB; box-shadow: 0 0 0 1px var(--rule), 0 2px 6px rgba(22, 28, 48, 0.1); margin-bottom: 6px; }
+.page-thumb.paper-cream { background: #FBF6E7; }
+.page-thumb.paper-dark { background: #1C1F29; }
+.page-thumb img { width: 100%; height: 100%; display: block; }
+.page-tile-open:focus-visible .page-thumb { outline: 3px solid var(--lapis); outline-offset: 3px; }
+.page-tile-title { padding-right: 80px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.page-tile-date { font-size: 14px; color: var(--ink-soft); }
+.page-tile-date { padding-right: 80px; }
+.page-tile-actions { position: absolute; right: -8px; bottom: -2px; display: flex; }
+.page-tile-actions .icon-btn { width: 40px; height: 40px; min-height: 0; border-radius: 8px; color: var(--ink-soft); }
+@media (max-width: 640px) { .cover { width: 104px; height: 140px; } .cover-title { font-size: 16px; } }

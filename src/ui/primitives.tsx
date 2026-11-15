@@ -113,3 +113,30 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
     </div>
   );
 }
+
+/** A small panel that drops from the button that opened it. Closes on Escape, a tap outside, or a choice. */
+export function Popover({ anchor, onClose, label, align = 'right', children }: { anchor: HTMLElement | null; onClose: () => void; label: string; align?: 'left' | 'right'; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    ref.current?.querySelector<HTMLElement>('button, a[href]')?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      previous?.focus?.();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const r = anchor?.getBoundingClientRect();
+  const style: React.CSSProperties = r
+    ? { top: r.bottom + 6, ...(align === 'right' ? { right: Math.max(8, window.innerWidth - r.right) } : { left: Math.max(8, r.left) }) }
+    : { top: 60, right: 8 };
+  return (
+    <div className="popover-backdrop" onPointerDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="popover" role="dialog" aria-label={label} ref={ref} style={style} onClick={(e) => { if ((e.target as HTMLElement).closest('[data-closes]')) onClose(); }}>
+        {children}
+      </div>
+    </div>
+  );
+}

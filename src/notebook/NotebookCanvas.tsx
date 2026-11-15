@@ -12,6 +12,7 @@ import { RichEditor } from '../editor/RichEditor.tsx';
 import type { PageDocument } from '../ink/document.ts';
 import { hasInkClipboard, InkEngine, type View } from '../ink/engine.ts';
 import { InkToolbar } from '../ink/InkToolbar.tsx';
+import { dateSlot, formatPageDate, PAGE_HAND_FONT, pageHeading, pageInk } from '../ink/paper.ts';
 import { selectToolConfig, useInkTools, PEN_COLORS } from '../ink/toolStore.ts';
 import { PAGE_WIDTH, isBox, type Bbox, type BoxObject, type PageObject, type TextBoxObject } from '../ink/types.ts';
 import { useQuoteClipboard, type QuotePayload } from '../reader/quoteClipboard.ts';
@@ -261,6 +262,7 @@ export const NotebookCanvas = forwardRef<NotebookHandle, { page: Page; topRight?
         </>,
         engine.objectLayer,
       )}
+      {engine && createPortal(<PageDate page={page} />, engine.topLayer)}
       {engine && editingObject && createPortal(
         <TextBoxEditor o={editingObject} engine={engine} onChange={updateEditing} onClose={closeEditing} toolbarSlot={toolbarSlot} />,
         engine.topLayer,
@@ -321,4 +323,34 @@ function TextBoxEditor({ o, engine, onChange, onClose, toolbarSlot }: {
       />
     </div>
   );
+}
+
+/**
+ * The first row of the page, written in a handwriting face: the passage title on the left and the date on the right.
+ * Tapping the date opens the iPad's date picker; its Reset button clears the date. The title can be written over.
+ */
+function PageDate({ page }: { page: Page }) {
+  const input = useRef<HTMLInputElement>(null);
+  const slot = dateSlot(page.template);
+  const width = 200;
+  const label = page.date ? formatPageDate(page.date) : 'Date';
+  const heading = pageHeading(page.title);
+  const hand = { fontFamily: PAGE_HAND_FONT, fontSize: slot.size, color: pageInk(page.paperColor), height: slot.h, top: slot.y, paddingBottom: slot.h * 0.08 };
+  return (<>
+    {heading && (
+      <div className="page-heading" aria-hidden="true" style={{ ...hand, left: slot.left, width: slot.right - width - 20 - slot.left }}>{heading}</div>
+    )}
+    <div
+      className={`page-date ${page.date ? '' : 'is-empty'}`} data-engine-ignore
+      style={{ ...hand, left: slot.right - width, width }}
+    >
+      <span>{label}</span>
+      <input
+        ref={input} type="date" aria-label="Page date" value={page.date ?? ''}
+        // Desktop browsers open the picker only from their own icon, so open it from anywhere on the date.
+        onClick={() => { try { input.current?.showPicker?.(); } catch { /* Already open, or not supported. */ } }}
+        onChange={(e) => void updatePage(page.id, { date: e.target.value || undefined })}
+      />
+    </div>
+  </>);
 }

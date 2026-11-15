@@ -1,6 +1,6 @@
 import { chapterKey, makeRef, refKey, toRuns, type VerseRef } from '../bible/refs.ts';
 import { newId } from '../app/ids.ts';
-import { db, type Highlight, type HighlightColor, type HighlightStyle, type Note } from './schema.ts';
+import { db, type Favorite, type Highlight, type HighlightColor, type HighlightStyle, type Note } from './schema.ts';
 
 /** Sets a whole-verse style on each verse, replacing any earlier one of the same style. */
 export async function highlightVerses(book: string, chapter: number, verses: number[], color: HighlightColor, style: HighlightStyle) {
@@ -92,4 +92,31 @@ export async function toggleBookmark(ref: VerseRef): Promise<boolean> {
   }
   await db.bookmarks.add({ id: newId(), ref, startKey: refKey(ref), createdAt: Date.now() });
   return true;
+}
+
+/** The favorite that covers any of these verses, if there is one. */
+export async function findFavorite(book: string, chapter: number, verses: number[]): Promise<Favorite | undefined> {
+  const rows = await db.favorites.where('chapterKey').equals(chapterKey(book, chapter)).toArray();
+  return rows.find((f) => f.verses.some((v) => verses.includes(v)));
+}
+
+export async function addFavorite(o: { book: string; chapter: number; verses: number[]; label: string; text: string; abbr: string; addedOn: string; why: string }): Promise<Favorite> {
+  const verses = [...o.verses].sort((a, b) => a - b);
+  const start = makeRef(o.book, o.chapter, verses[0]);
+  const now = Date.now();
+  const fav: Favorite = {
+    id: newId(), chapterKey: chapterKey(o.book, o.chapter), startRef: start, endRef: makeRef(o.book, o.chapter, verses[verses.length - 1]),
+    startKey: refKey(start), verses, label: o.label, text: o.text, abbr: o.abbr, addedOn: o.addedOn, why: o.why, createdAt: now, updatedAt: now,
+  };
+  await db.favorites.add(fav);
+  return fav;
+}
+
+export const updateFavorite = (id: string, patch: Partial<Favorite>) => db.favorites.update(id, { ...patch, updatedAt: Date.now() });
+
+/** Removes a favorite. Returns a function that puts it back. */
+export async function deleteFavorite(id: string): Promise<() => Promise<void>> {
+  const fav = await db.favorites.get(id);
+  await db.favorites.delete(id);
+  return async () => { if (fav) await db.favorites.put(fav); };
 }

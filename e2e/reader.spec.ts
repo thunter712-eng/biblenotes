@@ -143,3 +143,37 @@ test('finds verses by full-text search', async ({ page }) => {
   await page.locator('.result', { hasText: 'John 3:16' }).click();
   await expect(page.locator('.ref-btn')).toHaveText('John 3');
 });
+
+test('a verse can be made a favorite, with the day it was chosen and why', async ({ page }) => {
+  await page.goto('#/read/JHN/3');
+  await page.locator('.reader [data-v="16"]').first().click();
+  await page.getByRole('button', { name: 'Favorite' }).click();
+  const sheet = page.getByRole('dialog', { name: 'Add to favorites' });
+  await expect(sheet).toContainText('For God so loved');
+  await sheet.getByLabel('Date chosen').fill('2019-07-07');
+  await sheet.getByLabel('When and why you chose it').fill('Read at my baptism');
+  await sheet.getByRole('button', { name: 'Add to favorites' }).click();
+
+  // A star marks the verse, and tapping it shows the note again.
+  await page.getByRole('button', { name: /^Favorite: verse 16/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Favorite verse' }).getByLabel('When and why you chose it')).toHaveValue('Read at my baptism');
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: 'Menu' }).click();
+  await page.getByRole('button', { name: 'Favorite verses' }).click();
+  await expect(page.locator('.fav-year-head')).toHaveText('2019');
+  await expect(page.locator('.fav-entry')).toContainText('Read at my baptism');
+  await page.getByRole('button', { name: 'Read John 3:16 in context' }).click();
+  await expect(page.locator('.ref-btn')).toHaveText('John 3');
+});
+
+test('the ribbon bookmarks the chapter and lists bookmarks to jump to', async ({ page }) => {
+  await page.goto('#/read/ROM/8');
+  await page.getByRole('button', { name: 'Bookmarks' }).click();
+  await page.getByRole('button', { name: 'Bookmark Romans 8' }).click();
+  await expect(page.locator('.ribbon-btn')).toHaveClass(/is-marked/);
+  await page.goto('#/read/JHN/1');
+  await page.getByRole('button', { name: 'Bookmarks' }).click();
+  await page.getByRole('button', { name: 'Romans 8' }).click();
+  await expect(page.locator('.ref-btn')).toHaveText('Romans 8');
+});

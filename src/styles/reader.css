@@ -38,21 +38,44 @@
   font-weight: 500;
 }
 
-/* The ribbon marker: a length of gilt silk that hangs into the page while the chapter is bookmarked. */
-.ribbon {
+/*
+ * The ribbon marker: a length of gilt silk. A short end always peeks out from under the top bar;
+ * it falls the length of the page while this chapter is bookmarked. Tap it for your bookmarks.
+ */
+.ribbon-btn {
   position: absolute;
   top: 0;
-  right: 40px;
-  width: 22px;
-  height: 104px;
+  right: 30px;
   z-index: 4;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--gilt) 82%, #000), var(--gilt) 40%, color-mix(in srgb, var(--gilt) 82%, #fff) 70%, var(--gilt));
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 91%, 0 100%);
-  transform-origin: top;
-  animation: ribbon-fall 420ms cubic-bezier(0.22, 1.2, 0.36, 1);
-  pointer-events: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
 }
-@keyframes ribbon-fall { from { transform: scaleY(0.1); } to { transform: scaleY(1); } }
+.ribbon-btn.is-marked { height: 112px; }
+.ribbon {
+  display: block;
+  width: 22px;
+  height: 30px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--gilt) 82%, #000), var(--gilt) 40%, color-mix(in srgb, var(--gilt) 82%, #fff) 70%, var(--gilt));
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  opacity: 0.75;
+  transition: height 420ms cubic-bezier(0.22, 1.25, 0.36, 1), opacity 200ms;
+}
+.ribbon-btn.is-marked .ribbon { height: 104px; opacity: 1; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 91%, 0 100%); }
+.ribbon-btn:focus-visible { outline: 2px solid var(--lapis); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .ribbon { transition: none; } }
+
+/* The layout switch: reading, side by side, notebook, full screen. */
+.layout-switch { display: flex; margin: 0 6px; padding: 2px; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); flex: none; }
+.layout-switch button { display: grid; place-items: center; width: 44px; height: 38px; border: 0; border-radius: 9px; background: none; color: var(--ink-soft); }
+.layout-switch button.is-active { background: var(--raised); color: var(--lapis); box-shadow: 0 1px 3px rgba(22, 28, 48, 0.16); }
+.layout-switch button:focus-visible { outline: 2px solid var(--lapis); outline-offset: -2px; }
 
 .reader-scroll {
   min-width: 0;
@@ -203,3 +226,21 @@
 .block-q .verse-label { margin-left: -1.4em; }
 .verse-label-inline { display: block; margin: 0.4em 0 0.1em -1.4em; font-style: italic; color: var(--ink-soft); font-size: 0.92em; }
 .block-p .verse-label-inline { margin-left: 0; }
+
+/* A favorite verse: a small gilt star before the verse number. */
+.fav-marker {
+  display: inline-block;
+  width: 0.78em;
+  height: 0.78em;
+  margin: 0 3px 0 1px;
+  padding: 0;
+  border: 0;
+  vertical-align: 0.02em;
+  background: var(--gilt);
+  clip-path: polygon(50% 0, 61.8% 35.4%, 100% 38.2%, 69.1% 61.8%, 80.9% 100%, 50% 76.4%, 19.1% 100%, 30.9% 61.8%, 0 38.2%, 38.2% 35.4%);
+  cursor: pointer;
+}
+/* A larger invisible hit area for a finger. */
+.fav-marker { position: relative; }
+.fav-marker::before { content: ''; position: absolute; inset: -12px; }
+.vn-fav { white-space: nowrap; }

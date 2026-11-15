@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { createBackup, lastBackupAt, readBackup, restoreMerge, restoreReplace, type ParsedBackup } from '../backup/backup.ts';
-import { shareOrDownload } from '../backup/share.ts';
+import { backUpNow } from '../backup/backUpNow.ts';
+import { lastBackupAt, readBackup, restoreMerge, restoreReplace, type ParsedBackup } from '../backup/backup.ts';
 import { forgetAllDocuments } from '../notebook/pageStore.ts';
 import { Field, Sheet, toast } from '../ui/primitives.tsx';
 import { navigate } from './router.ts';
@@ -34,12 +34,8 @@ export function SettingsPage() {
   const backup = async () => {
     setBusy(true);
     try {
-      const blob = await createBackup();
-      const date = new Date().toISOString().slice(0, 10);
-      await shareOrDownload(blob, `bible-notes-backup-${date}.zip`);
+      await backUpNow();
       setLast(await lastBackupAt());
-    } catch (e) {
-      toast(`The backup failed: ${(e as Error).message}`);
     } finally {
       setBusy(false);
     }

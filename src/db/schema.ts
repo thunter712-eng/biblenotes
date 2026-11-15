@@ -41,9 +41,35 @@ export interface Note {
   updatedAt: number;
 }
 
+/** A verse or passage marked as a favorite, with when and why it was chosen. */
+export interface Favorite {
+  id: string;
+  chapterKey: string;
+  startRef: VerseRef;
+  endRef: VerseRef;
+  startKey: number;
+  /** Every verse in the favorite, which may be non-contiguous. */
+  verses: number[];
+  /** "John 3:16". */
+  label: string;
+  /** The verse text when it was chosen, and the translation it came from. */
+  text: string;
+  abbr: string;
+  /** The day it became a favorite, as "YYYY-MM-DD". Editable, for favorites chosen long ago. */
+  addedOn: string;
+  /** When and why it was chosen. */
+  why: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export type CoverColor = 'lapis' | 'oxblood' | 'forest' | 'slate' | 'ochre' | 'plum';
+
 export interface Notebook {
   id: string;
   title: string;
+  /** The cloth color of the cover on the bookshelf. */
+  color?: CoverColor;
   tags: string[];
   createdAt: number;
   updatedAt: number;
@@ -65,6 +91,8 @@ export interface Page {
   paperColor: PaperColor;
   /** How many sheets tall the page has grown. */
   sheets: number;
+  /** The date written on the first row, as "YYYY-MM-DD". */
+  date?: string;
   /** Typed text gathered from text boxes and quotes, for search. */
   text: string;
   /** Set for the hidden page behind an inline-ink note. */
@@ -114,6 +142,7 @@ export type BibleNotesDb = Dexie & {
   pageObjects: Dexie.Table<PageObjectRow, [string, string]>;
   images: EntityTable<ImageRow, 'id'>;
   bookmarks: EntityTable<Bookmark, 'id'>;
+  favorites: EntityTable<Favorite, 'id'>;
   history: EntityTable<HistoryEntry, 'chapterKey'>;
   kv: EntityTable<KvRow, 'key'>;
 };
@@ -142,12 +171,16 @@ export async function migrateToV2(tx: Transaction): Promise<void> {
   });
 }
 
+/** v3: favorite verses. */
+export const V3_STORES = { favorites: 'id, chapterKey, startKey, addedOn' };
+
 export function openDb(name = DB_NAME): BibleNotesDb {
   const db = new Dexie(name) as BibleNotesDb;
   db.version(1).stores(V1_STORES);
   db.version(2).stores(V2_STORES).upgrade(migrateToV2);
+  db.version(3).stores(V3_STORES);
   return db;
 }
 
 export const db = openDb();
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
