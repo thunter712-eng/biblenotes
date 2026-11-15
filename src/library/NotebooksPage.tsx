@@ -4,7 +4,7 @@ import { PageShell } from '../app/PageShell.tsx';
 import { db, type CoverColor, type Notebook, type Page } from '../db/schema.ts';
 import { createNotebook, createPage, deleteNotebook, updateNotebook } from '../db/library.ts';
 import { exportNotebookPdf, exportNotebookPngs } from '../backup/exportPage.ts';
-import { formatPageDate } from '../ink/paper.ts';
+import { formatPageDate, todayIso } from '../ink/paper.ts';
 import { PageMenu } from '../notebook/PageMenu.tsx';
 import { PaperSettings } from '../notebook/PaperSettings.tsx';
 import { Icon } from '../ui/icons.tsx';
@@ -21,6 +21,8 @@ export const COVERS: { value: CoverColor; label: string }[] = [
   { value: 'ochre', label: 'Ochre' },
   { value: 'plum', label: 'Plum' },
 ];
+
+const pageDay = (p: Page) => p.date || todayIso(new Date(p.createdAt));
 
 /** New notebooks take the next cloth along, so a shelf of them isn't all one color. */
 const coverFor = (nb: Notebook, i: number): CoverColor => nb.color ?? COVERS[i % COVERS.length].value;
@@ -104,8 +106,8 @@ export function NotebooksPage() {
   const openId = (chosen && notebooks?.some((n) => n.id === chosen) ? chosen : null) ?? recent ?? notebooks?.[0]?.id ?? null;
   const open = notebooks?.find((n) => n.id === openId);
   const openIndex = notebooks?.findIndex((n) => n.id === openId) ?? 0;
-  // In the order they were written, first page first, like a paper notebook.
-  const list = pages?.filter((p) => p.notebookId === openId).sort((a, b) => a.createdAt - b.createdAt) ?? [];
+  // Oldest first, like a paper notebook, by the date written on each page. Undated pages use the day they were made.
+  const list = pages?.filter((p) => p.notebookId === openId).sort((a, b) => pageDay(a).localeCompare(pageDay(b)) || a.createdAt - b.createdAt) ?? [];
   const settingsNb = notebooks?.find((n) => n.id === settingsFor);
 
   const add = async () => {

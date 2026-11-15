@@ -98,6 +98,14 @@ test('notebooks can be made, and pages renamed, moved, duplicated and deleted wi
   await expect(page.getByText('Chapter 8 copy')).toBeVisible();
   // Pages run oldest first, so the copy comes after the original.
   await expect(page.locator('.page-tile-title')).toHaveText(['Chapter 8', 'Chapter 8 copy']);
+  // A page dated earlier moves ahead, whatever day it was made.
+  await page.getByRole('button', { name: /^Open Chapter 8 copy,/ }).click();
+  await page.getByLabel('Page date').fill('2020-01-05');
+  await page.waitForTimeout(300);
+  await page.goBack();
+  await page.getByRole('button', { name: /^Sermon notes, / }).click();
+  await expect(page.locator('.page-tile-title')).toHaveText(['Chapter 8 copy', 'Chapter 8']);
+
 
   await page.getByRole('button', { name: 'Actions for Chapter 8 copy' }).click();
   await page.getByRole('button', { name: 'Delete page' }).click();
