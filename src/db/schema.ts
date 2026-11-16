@@ -63,6 +63,15 @@ export interface Favorite {
   updatedAt: number;
 }
 
+/** One Sunday's bingo card. `id` is that Sunday, "YYYY-MM-DD". */
+export interface BingoCard {
+  id: string;
+  /** Mentions per square id. The free space is never stored. */
+  counts: Record<string, number>;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export type CoverColor = 'lapis' | 'oxblood' | 'forest' | 'slate' | 'ochre' | 'plum';
 
 export interface Notebook {
@@ -143,6 +152,7 @@ export type BibleNotesDb = Dexie & {
   images: EntityTable<ImageRow, 'id'>;
   bookmarks: EntityTable<Bookmark, 'id'>;
   favorites: EntityTable<Favorite, 'id'>;
+  bingo: EntityTable<BingoCard, 'id'>;
   history: EntityTable<HistoryEntry, 'chapterKey'>;
   kv: EntityTable<KvRow, 'key'>;
 };
@@ -174,13 +184,17 @@ export async function migrateToV2(tx: Transaction): Promise<void> {
 /** v3: favorite verses. */
 export const V3_STORES = { favorites: 'id, chapterKey, startKey, addedOn' };
 
+/** v4: Sunday bingo cards. */
+export const V4_STORES = { bingo: 'id' };
+
 export function openDb(name = DB_NAME): BibleNotesDb {
   const db = new Dexie(name) as BibleNotesDb;
   db.version(1).stores(V1_STORES);
   db.version(2).stores(V2_STORES).upgrade(migrateToV2);
   db.version(3).stores(V3_STORES);
+  db.version(4).stores(V4_STORES);
   return db;
 }
 
 export const db = openDb();
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;

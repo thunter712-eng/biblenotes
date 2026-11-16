@@ -177,3 +177,40 @@ test('the ribbon bookmarks the chapter and lists bookmarks to jump to', async ({
   await page.getByRole('button', { name: 'Romans 8' }).click();
   await expect(page.locator('.ref-btn')).toHaveText('Romans 8');
 });
+
+test('holding the ribbon brings up the Sunday bingo card, which counts mentions and keeps stats', async ({ page }) => {
+  await page.goto('#/read/JHN/3');
+  const ribbon = page.locator('.ribbon-btn');
+  const hold = async (loc: typeof ribbon, ms = 800) => {
+    const box = (await loc.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(ms);
+    await page.mouse.up();
+  };
+  await hold(ribbon);
+  const card = page.getByRole('dialog', { name: /^Bingo card for/ });
+  await expect(card).toBeVisible();
+  // A hold doesn't also open the bookmarks.
+  await expect(page.getByRole('dialog', { name: 'Bookmarks' })).toHaveCount(0);
+
+  await card.getByRole('button', { name: 'C.S. Lewis' }).click();
+  await card.getByRole('button', { name: /^C\.S\. Lewis/ }).click();
+  await expect(card.getByRole('button', { name: 'C.S. Lewis, 2 times' })).toBeVisible();
+  await hold(card.getByRole('button', { name: /^C\.S\. Lewis/ }));
+  await expect(card.getByRole('button', { name: 'C.S. Lewis, 1 time' })).toBeVisible();
+
+  for (const name of ['Dr. Seuss', 'Wizard of Oz', 'Anything baseball']) await card.getByRole('button', { name, exact: true }).click();
+  await expect(card.getByRole('status')).toHaveText('Bingo!');
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/bingo.png' });
+
+  await card.getByRole('button', { name: /^C\.S\. Lewis/ }).click();
+  await card.getByRole('button', { name: 'Stats' }).click();
+  await expect(card).toContainText('1 Sunday played, 1 bingo.');
+  await expect(card.locator('.bingo-stat-list li').first()).toContainText('C.S. Lewis2× in 1 of 1');
+  if (process.env.SHOTS) await page.screenshot({ path: process.env.SHOTS + '/bingo-stats.png' });
+
+  // A tap on the ribbon puts it away.
+  await ribbon.click();
+  await expect(card).toHaveCount(0);
+});

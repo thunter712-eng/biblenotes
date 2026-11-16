@@ -16,6 +16,7 @@ import { useInkTools } from '../ink/toolStore.ts';
 import { Icon } from '../ui/icons.tsx';
 import { IconButton, Popover, toast } from '../ui/primitives.tsx';
 import { Picker } from './Picker.tsx';
+import { BingoCard } from '../bingo/BingoCard.tsx';
 import type { QuotePayload } from './quoteClipboard.ts';
 import { ReaderPane } from './ReaderPane.tsx';
 import { ReadingSettings, useTranslations } from './ReadingSettings.tsx';
@@ -40,6 +41,16 @@ export function StudyView({ route }: { route: ReadRoute }) {
   const translations = useTranslations();
   const [sheet, setSheet] = useState<null | 'picker' | 'reading'>(null);
   const [pop, setPop] = useState<null | { kind: 'menu' | 'ribbon'; anchor: HTMLElement }>(null);
+  const [bingo, setBingo] = useState(false);
+  // Holding the ribbon opens the bingo card; a plain tap still opens bookmarks.
+  const ribbonHold = useRef<{ timer: number; fired: boolean }>({ timer: 0, fired: false });
+  const ribbonDown = () => {
+    const h = ribbonHold.current;
+    h.fired = false;
+    clearTimeout(h.timer);
+    h.timer = window.setTimeout(() => { h.fired = true; setBingo((b) => !b); }, 550);
+  };
+  const ribbonUp = () => clearTimeout(ribbonHold.current.timer);
   const allBookmarks = useLiveQuery(() => db.bookmarks.orderBy('createdAt').reverse().toArray(), []);
   const [mode, setMode] = useState<StudyMode>(route.pageId ? 'split' : 'read');
   const [pageId, setPageIdState] = useState<string | null>(route.pageId ?? null);
@@ -209,7 +220,14 @@ export function StudyView({ route }: { route: ReadRoute }) {
             <button
               type="button" className={`ribbon-btn ${chapterBookmark ? 'is-marked' : ''}`}
               aria-label={chapterBookmark ? `Bookmarks. ${chapterLabel(book, chapter)} is bookmarked` : 'Bookmarks'}
-              onClick={(e) => setPop({ kind: 'ribbon', anchor: e.currentTarget })}
+              onPointerDown={ribbonDown} onPointerUp={ribbonUp} onPointerLeave={ribbonUp} onPointerCancel={ribbonUp}
+              onContextMenu={(e) => e.preventDefault()}
+              onClick={(e) => {
+                if (ribbonHold.current.fired) { ribbonHold.current.fired = false; return; }
+                // While the card is up, the ribbon is the quick way to put it away.
+                if (bingo) { setBingo(false); return; }
+                setPop({ kind: 'ribbon', anchor: e.currentTarget });
+              }}
             >
               <span className="ribbon" />
             </button>
@@ -289,6 +307,7 @@ export function StudyView({ route }: { route: ReadRoute }) {
           </div>
         </Popover>
       )}
+      {bingo && <BingoCard onClose={() => setBingo(false)} />}
       {sheet === 'picker' && <Picker currentBook={book} currentChapter={chapter} onClose={() => setSheet(null)} />}
       {sheet === 'reading' && <ReadingSettings onClose={() => setSheet(null)} />}
     </div>

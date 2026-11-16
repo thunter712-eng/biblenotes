@@ -5,6 +5,7 @@ import './styles/reader.css';
 import './styles/editor.css';
 import './styles/ink.css';
 import './styles/notebook.css';
+import './styles/bingo.css';
 import { App } from './App.tsx';
 import { useSettings } from './app/settings.ts';
 
